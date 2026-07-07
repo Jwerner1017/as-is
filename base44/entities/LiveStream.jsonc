@@ -1,0 +1,57 @@
+{
+  "name": "LiveStream",
+  "type": "object",
+  "properties": {
+    "seller_id": {
+      "type": "string"
+    },
+    "seller_name": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "scheduled",
+        "live",
+        "ended"
+      ],
+      "default": "scheduled"
+    },
+    "viewer_count": {
+      "type": "number",
+      "default": 0
+    },
+    "moderation_level": {
+      "type": "string",
+      "enum": [
+        "chill",
+        "moderate",
+        "strict"
+      ],
+      "default": "moderate"
+    },
+    "game_type": {
+      "type": "string"
+    },
+    "scheduled_time": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "thumbnail_url": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "seller_id",
+    "title"
+  ]
+}

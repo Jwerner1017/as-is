@@ -1,0 +1,75 @@
+{
+  "name": "Order",
+  "type": "object",
+  "properties": {
+    "listing_id": {
+      "type": "string"
+    },
+    "listing_title": {
+      "type": "string"
+    },
+    "buyer_id": {
+      "type": "string"
+    },
+    "buyer_name": {
+      "type": "string"
+    },
+    "seller_id": {
+      "type": "string"
+    },
+    "seller_name": {
+      "type": "string"
+    },
+    "amount": {
+      "type": "number"
+    },
+    "platform_fee": {
+      "type": "number"
+    },
+    "seller_payout": {
+      "type": "number"
+    },
+    "purchase_type": {
+      "type": "string",
+      "enum": [
+        "buy_now",
+        "auction",
+        "rage_buy",
+        "all_mine"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending_shipment",
+        "shipped",
+        "delivered",
+        "payout_sent"
+      ],
+      "default": "pending_shipment"
+    },
+    "tracking_number": {
+      "type": "string"
+    },
+    "shipped_date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "delivered_date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "payout_date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "image_url": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "listing_id",
+    "listing_title",
+    "amount"
+  ]
+}

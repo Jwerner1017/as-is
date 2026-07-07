@@ -1,0 +1,64 @@
+{
+  "name": "SellerProfile",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "display_name": {
+      "type": "string"
+    },
+    "avatar_url": {
+      "type": "string"
+    },
+    "seller_level": {
+      "type": "string",
+      "enum": [
+        "New",
+        "Up & Coming",
+        "Trusted Seller",
+        "Top Seller"
+      ],
+      "default": "New"
+    },
+    "total_sales": {
+      "type": "number",
+      "default": 0
+    },
+    "total_revenue": {
+      "type": "number",
+      "default": 0
+    },
+    "rating": {
+      "type": "number",
+      "default": 0
+    },
+    "review_count": {
+      "type": "number",
+      "default": 0
+    },
+    "bio": {
+      "type": "string"
+    },
+    "payout_preference": {
+      "type": "string",
+      "enum": [
+        "per_delivery",
+        "weekly"
+      ],
+      "default": "per_delivery"
+    },
+    "onboarded": {
+      "type": "boolean",
+      "default": false
+    },
+    "banned": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "user_id",
+    "display_name"
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "name": "Bid",
+  "type": "object",
+  "properties": {
+    "listing_id": {
+      "type": "string"
+    },
+    "bidder_id": {
+      "type": "string"
+    },
+    "bidder_name": {
+      "type": "string"
+    },
+    "amount": {
+      "type": "number"
+    },
+    "bid_type": {
+      "type": "string",
+      "enum": [
+        "normal",
+        "rage_buy",
+        "all_mine"
+      ]
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "listing_id",
+    "amount",
+    "bid_type"
+  ]
+}

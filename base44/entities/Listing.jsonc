@@ -1,0 +1,140 @@
+{
+  "name": "Listing",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string"
+    },
+    "subcategory": {
+      "type": "string"
+    },
+    "sub_subcategory": {
+      "type": "string"
+    },
+    "condition": {
+      "type": "string",
+      "enum": [
+        "New",
+        "Like New",
+        "Used",
+        "For Parts",
+        "Refurbished"
+      ]
+    },
+    "selling_format": {
+      "type": "string",
+      "enum": [
+        "Buy It Now",
+        "Auction",
+        "Live"
+      ]
+    },
+    "price": {
+      "type": "number"
+    },
+    "current_bid": {
+      "type": "number"
+    },
+    "bid_count": {
+      "type": "number",
+      "default": 0
+    },
+    "starting_bid": {
+      "type": "number"
+    },
+    "auction_end": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "rage_buy_enabled": {
+      "type": "boolean",
+      "default": false
+    },
+    "rage_buy_triggered_manually": {
+      "type": "boolean",
+      "default": false
+    },
+    "all_mine_active": {
+      "type": "boolean",
+      "default": false
+    },
+    "all_mine_expires": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "juiced": {
+      "type": "boolean",
+      "default": false
+    },
+    "juiced_until": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "images": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "shipping_type": {
+      "type": "string",
+      "enum": [
+        "Free Shipping",
+        "Flat Rate",
+        "Calculated"
+      ]
+    },
+    "shipping_cost": {
+      "type": "number"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "sold",
+        "ended",
+        "draft"
+      ],
+      "default": "active"
+    },
+    "seller_id": {
+      "type": "string"
+    },
+    "seller_name": {
+      "type": "string"
+    },
+    "buyer_id": {
+      "type": "string"
+    },
+    "final_price": {
+      "type": "number"
+    },
+    "sold_date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "is_replica": {
+      "type": "boolean",
+      "default": false
+    },
+    "highest_bidder_id": {
+      "type": "string"
+    },
+    "highest_bidder_name": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "title",
+    "description",
+    "category",
+    "condition",
+    "selling_format"
+  ]
+}
