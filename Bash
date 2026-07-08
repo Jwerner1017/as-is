@@ -8,3 +8,4 @@ mkdir -p src/components/ragebuy
 mkdir -p src/components/live
 mkdir -p src/components/juice
 mkdir -p src/components/seller
+mkdir -p src/components/ui
