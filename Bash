@@ -1,0 +1,3 @@
+mkdir -p docs/policies
+mkdir -p src/types
+mkdir -p src/lib
