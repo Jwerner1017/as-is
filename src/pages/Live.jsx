@@ -1,25 +1,33 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { Radio, Users, MessageSquare, Gamepad2, Plus, Clock, Eye } from 'lucide-react';
+import { Radio, Users, MessageSquare, Gamepad2, Plus, Clock, Eye, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
+import GoLiveDialog from '@/components/live/GoLiveDialog';
+import { useToast } from '@/components/ui/use-toast';
 
 export default function Live() {
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const [streams, setStreams] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showGoLive, setShowGoLive] = useState(false);
+
+  const reload = async () => {
+    try {
+      const data = await base44.entities.LiveStream.filter({}, '-created_date', 20);
+      setStreams(data);
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   useEffect(() => {
     async function load() {
-      try {
-        const data = await base44.entities.LiveStream.filter({}, '-created_date', 20);
-        setStreams(data);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
+      await reload();
+      setLoading(false);
     }
     load();
   }, []);
@@ -29,6 +37,18 @@ export default function Live() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
+      {/* Top action bar */}
+      <div className="flex items-center justify-between mb-6">
+        <Button variant="ghost" onClick={() => navigate(-1)} className="text-muted-foreground hover:text-foreground -ml-2">
+          <ArrowLeft className="w-4 h-4 mr-1" /> Back
+        </Button>
+        <Button onClick={() => setShowGoLive(true)} className="bg-red-600 hover:bg-red-500 text-white font-bold uppercase tracking-wider">
+          <Radio className="w-4 h-4 mr-1" /> GO LIVE
+        </Button>
+      </div>
+
+      <GoLiveDialog open={showGoLive} onOpenChange={setShowGoLive} onCreated={() => { reload(); setLoading(false); }} />
+
       {/* Hero */}
       <div className="text-center mb-10">
         <div className="flex items-center justify-center gap-3 mb-3">
@@ -49,11 +69,9 @@ export default function Live() {
             <Radio className="w-10 h-10 text-muted-foreground/30 mx-auto mb-3" />
             <p className="font-display text-xl text-muted-foreground">NOBODY'S LIVE RIGHT NOW</p>
             <p className="text-sm text-muted-foreground mt-1">Check back later or be the first to go live.</p>
-            <Link to="/sell">
-              <Button className="mt-4 bg-red-600 hover:bg-red-500 text-white font-bold uppercase">
-                <Radio className="w-4 h-4 mr-1" /> GO LIVE
-              </Button>
-            </Link>
+            <Button onClick={() => setShowGoLive(true)} className="mt-4 bg-red-600 hover:bg-red-500 text-white font-bold uppercase">
+              <Radio className="w-4 h-4 mr-1" /> GO LIVE
+            </Button>
           </div>
         )}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
