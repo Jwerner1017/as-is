@@ -4,3 +4,7 @@ mkdir -p src/lib
 mkdir -p src/components/{common,listing,live,ragebuy,seller}
 mkdir -p src/hooks
 mkdir -p src/services
+mkdir -p src/components/ragebuy
+mkdir -p src/components/live
+mkdir -p src/components/juice
+mkdir -p src/components/seller
