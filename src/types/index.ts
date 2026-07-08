@@ -2,6 +2,8 @@ export type SellerLevel = 'new' | 'upcoming' | 'trusted' | 'top';
 
 export type UserRole = 'buyer' | 'seller' | 'both';
 
+export type ModerationLevel = 'relaxed' | 'medium' | 'strict';
+
 export interface User {
   id: string;
   email: string;
@@ -44,8 +46,17 @@ export interface LiveStream {
   id: string;
   sellerId: string;
   title: string;
+  description?: string;
   isActive: boolean;
   viewerCount: number;
-  moderationLevel: 'relaxed' | 'medium' | 'strict';
+  moderationLevel: ModerationLevel;
   startedAt: string;
+  endedAt?: string;
+}
+
+export interface JuiceActivation {
+  listingId: string;
+  sellerId: string;
+  activatedAt: string;
+  expiresAt: string;
 }
