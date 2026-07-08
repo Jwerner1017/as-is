@@ -1,3 +1,6 @@
 mkdir -p docs/policies
 mkdir -p src/types
 mkdir -p src/lib
+mkdir -p src/components/{common,listing,live,ragebuy,seller}
+mkdir -p src/hooks
+mkdir -p src/services
