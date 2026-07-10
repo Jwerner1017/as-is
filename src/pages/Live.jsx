@@ -112,9 +112,20 @@ export default function Live() {
 }
 
 function StreamCard({ stream, isLive }) {
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    if (stream.category) {
+      navigate(`/browse?category=${encodeURIComponent(stream.category)}`);
+    } else {
+      navigate('/browse');
+    }
+  };
+
   return (
     <motion.div
       whileHover={{ scale: 1.02 }}
+      onClick={handleClick}
       className={`bg-card border rounded-lg overflow-hidden cursor-pointer ${isLive ? 'border-red-500/50' : 'border-border'}`}
     >
       <div className="aspect-video bg-muted relative">
