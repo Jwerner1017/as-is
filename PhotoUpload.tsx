@@ -1,10 +1,10 @@
 import { useState } from 'react';
 
-interface PhotoUploadProps {
-  photos: File[];
-  setPhotos: (photos: File[]) => void;
-  minPhotos?: number;
-}
+interface <PhotoUpload 
+  photos={photos} 
+  setPhotos={setPhotos} 
+  minPhotos={2} 
+/>
 
 export function PhotoUpload({ photos, setPhotos, minPhotos = 2 }: PhotoUploadProps) {
   const [previews, setPreviews] = useState<string[]>([]);
