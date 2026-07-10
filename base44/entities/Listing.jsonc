@@ -93,6 +93,40 @@
     "shipping_cost": {
       "type": "number"
     },
+    "weight": {
+      "type": "number",
+      "description": "Package weight in pounds (for calculated shipping)"
+    },
+    "length": {
+      "type": "number",
+      "description": "Package length in inches (for calculated shipping)"
+    },
+    "width": {
+      "type": "number",
+      "description": "Package width in inches (for calculated shipping)"
+    },
+    "height": {
+      "type": "number",
+      "description": "Package height in inches (for calculated shipping)"
+    },
+    "distance_unit": {
+      "type": "string",
+      "enum": [
+        "in",
+        "cm"
+      ],
+      "default": "in"
+    },
+    "mass_unit": {
+      "type": "string",
+      "enum": [
+        "lb",
+        "oz",
+        "g",
+        "kg"
+      ],
+      "default": "lb"
+    },
     "status": {
       "type": "string",
       "enum": [

@@ -21,7 +21,8 @@ export default function Sell() {
   const [form, setForm] = useState({
     title: '', description: '', category: '', subcategory: '', condition: '',
     selling_format: 'Buy It Now', price: '', starting_bid: '', auction_end: '',
-    shipping_type: 'Free Shipping', shipping_cost: '', is_replica: false
+    shipping_type: 'Free Shipping', shipping_cost: '', is_replica: false,
+    weight: '', length: '', width: '', height: ''
   });
 
   useEffect(() => {
@@ -55,6 +56,12 @@ export default function Sell() {
         starting_bid: form.starting_bid ? parseFloat(form.starting_bid) : undefined,
         shipping_cost: form.shipping_cost ? parseFloat(form.shipping_cost) : undefined,
         current_bid: form.starting_bid ? parseFloat(form.starting_bid) : undefined,
+        weight: form.weight ? parseFloat(form.weight) : undefined,
+        length: form.length ? parseFloat(form.length) : undefined,
+        width: form.width ? parseFloat(form.width) : undefined,
+        height: form.height ? parseFloat(form.height) : undefined,
+        distance_unit: 'in',
+        mass_unit: 'lb',
         seller_id: user.id,
         seller_name: user.full_name || 'Seller',
         status: 'active'
@@ -205,6 +212,34 @@ export default function Sell() {
             </div>
           )}
         </div>
+
+        {/* Package dimensions for calculated shipping */}
+        {form.shipping_type === 'Calculated' && (
+          <div className="bg-card border border-border rounded-lg p-4 space-y-3">
+            <div>
+              <p className="text-xs uppercase tracking-wider font-bold text-foreground">Package Details</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">Used to calculate live shipping rates at checkout</p>
+            </div>
+            <div className="grid grid-cols-4 gap-2">
+              <div>
+                <Label className="text-[10px] uppercase text-muted-foreground">Weight (lb)</Label>
+                <Input type="number" step="0.1" min="0.1" value={form.weight} onChange={e => setForm(p => ({ ...p, weight: e.target.value }))} placeholder="1.0" className="mt-1 bg-muted border-border text-sm" required />
+              </div>
+              <div>
+                <Label className="text-[10px] uppercase text-muted-foreground">Length (in)</Label>
+                <Input type="number" step="0.1" min="0.1" value={form.length} onChange={e => setForm(p => ({ ...p, length: e.target.value }))} placeholder="5" className="mt-1 bg-muted border-border text-sm" required />
+              </div>
+              <div>
+                <Label className="text-[10px] uppercase text-muted-foreground">Width (in)</Label>
+                <Input type="number" step="0.1" min="0.1" value={form.width} onChange={e => setForm(p => ({ ...p, width: e.target.value }))} placeholder="5" className="mt-1 bg-muted border-border text-sm" required />
+              </div>
+              <div>
+                <Label className="text-[10px] uppercase text-muted-foreground">Height (in)</Label>
+                <Input type="number" step="0.1" min="0.1" value={form.height} onChange={e => setForm(p => ({ ...p, height: e.target.value }))} placeholder="5" className="mt-1 bg-muted border-border text-sm" required />
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Replica toggle */}
         <div className="flex items-center gap-3 bg-card border border-border rounded-lg p-4">

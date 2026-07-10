@@ -58,6 +58,23 @@
     },
     "stripe_account_id": {
       "type": "string"
+    },
+    "ship_from_name": {
+      "type": "string",
+      "description": "Sender name for shipping labels"
+    },
+    "ship_from_street1": {
+      "type": "string",
+      "description": "Sender street address for shipping labels"
+    },
+    "ship_from_city": {
+      "type": "string"
+    },
+    "ship_from_state": {
+      "type": "string"
+    },
+    "ship_from_zip": {
+      "type": "string"
     }
   },
   "required": [

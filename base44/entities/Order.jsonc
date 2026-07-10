@@ -29,6 +29,10 @@
     "seller_payout": {
       "type": "number"
     },
+    "shipping_cost": {
+      "type": "number",
+      "description": "Shipping cost charged to buyer (for calculated shipping)"
+    },
     "purchase_type": {
       "type": "string",
       "enum": [
@@ -65,6 +69,40 @@
     },
     "image_url": {
       "type": "string"
+    },
+    "ship_to_name": {
+      "type": "string"
+    },
+    "ship_to_street1": {
+      "type": "string"
+    },
+    "ship_to_street2": {
+      "type": "string"
+    },
+    "ship_to_city": {
+      "type": "string"
+    },
+    "ship_to_state": {
+      "type": "string"
+    },
+    "ship_to_zip": {
+      "type": "string"
+    },
+    "ship_to_country": {
+      "type": "string",
+      "default": "US"
+    },
+    "label_url": {
+      "type": "string",
+      "description": "Shippo label PDF URL for printing"
+    },
+    "carrier": {
+      "type": "string",
+      "description": "Shipping carrier (e.g. usps, ups)"
+    },
+    "shipping_rate_id": {
+      "type": "string",
+      "description": "Shippo rate object ID for label purchase"
     }
   },
   "required": [
