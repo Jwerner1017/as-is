@@ -1,0 +1,216 @@
+{
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "entity",
+      "events": [
+        "create"
+      ],
+      "entity_name": "SellerProfile"
+    }
+  },
+  "description": "When a SellerProfile is created, auto-creates a Stripe Express account, then polls Stripe until onboarding is confirmed, marking the profile as verified so the seller can create listings.",
+  "name": "Seller Stripe Onboarding",
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "seller_stripe_onboarding",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "create_account": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "auto-stripe-onboard",
+            "args": {
+              "profile_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "wait_1",
+          "x-base44": {
+            "title": "Create Stripe account",
+            "description": "Auto-provision Express account"
+          }
+        }
+      },
+      {
+        "wait_1": {
+          "wait": "PT5M",
+          "then": "check_1",
+          "x-base44": {
+            "title": "Wait 5 min",
+            "description": "Give seller time to onboard"
+          }
+        }
+      },
+      {
+        "check_1": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "check-stripe-verification",
+            "args": {
+              "profile_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "switch_1",
+          "x-base44": {
+            "title": "Check verification",
+            "description": "Poll Stripe status"
+          }
+        }
+      },
+      {
+        "switch_1": {
+          "switch": [
+            {
+              "when": "${ .check_1.onboarded == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_2"
+            }
+          ],
+          "x-base44": {
+            "title": "Verified?",
+            "description": "Branch on status"
+          }
+        }
+      },
+      {
+        "wait_2": {
+          "wait": "PT5M",
+          "then": "check_2",
+          "x-base44": {
+            "title": "Wait 5 min",
+            "description": "Continue polling"
+          }
+        }
+      },
+      {
+        "check_2": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "check-stripe-verification",
+            "args": {
+              "profile_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "switch_2",
+          "x-base44": {
+            "title": "Check verification",
+            "description": "Poll Stripe status"
+          }
+        }
+      },
+      {
+        "switch_2": {
+          "switch": [
+            {
+              "when": "${ .check_2.onboarded == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_3"
+            }
+          ],
+          "x-base44": {
+            "title": "Verified?",
+            "description": "Branch on status"
+          }
+        }
+      },
+      {
+        "wait_3": {
+          "wait": "PT5M",
+          "then": "check_3",
+          "x-base44": {
+            "title": "Wait 5 min",
+            "description": "Continue polling"
+          }
+        }
+      },
+      {
+        "check_3": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "check-stripe-verification",
+            "args": {
+              "profile_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "switch_3",
+          "x-base44": {
+            "title": "Check verification",
+            "description": "Poll Stripe status"
+          }
+        }
+      },
+      {
+        "switch_3": {
+          "switch": [
+            {
+              "when": "${ .check_3.onboarded == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "wait_4"
+            }
+          ],
+          "x-base44": {
+            "title": "Verified?",
+            "description": "Branch on status"
+          }
+        }
+      },
+      {
+        "wait_4": {
+          "wait": "PT5M",
+          "then": "check_4",
+          "x-base44": {
+            "title": "Wait 5 min",
+            "description": "Final poll"
+          }
+        }
+      },
+      {
+        "check_4": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "check-stripe-verification",
+            "args": {
+              "profile_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "switch_4",
+          "x-base44": {
+            "title": "Check verification",
+            "description": "Final Stripe status check"
+          }
+        }
+      },
+      {
+        "switch_4": {
+          "switch": [
+            {
+              "when": "${ .check_4.onboarded == true }",
+              "then": "end"
+            },
+            {
+              "when": "${ true }",
+              "then": "end"
+            }
+          ],
+          "x-base44": {
+            "title": "Verified?",
+            "description": "Final branch"
+          }
+        }
+      }
+    ]
+  }
+}

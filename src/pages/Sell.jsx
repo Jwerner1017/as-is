@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Upload, X, Plus } from 'lucide-react';
@@ -15,12 +15,23 @@ export default function Sell() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [profile, setProfile] = useState(null);
+  const [profileLoading, setProfileLoading] = useState(true);
   const [images, setImages] = useState([]);
   const [form, setForm] = useState({
     title: '', description: '', category: '', subcategory: '', condition: '',
     selling_format: 'Buy It Now', price: '', starting_bid: '', auction_end: '',
     shipping_type: 'Free Shipping', shipping_cost: '', is_replica: false
   });
+
+  useEffect(() => {
+    base44.auth.me().then(u => {
+      if (!u) { setProfileLoading(false); return; }
+      base44.entities.SellerProfile.filter({ user_id: u.id })
+        .then(profiles => { setProfile(profiles[0] || null); setProfileLoading(false); })
+        .catch(() => setProfileLoading(false));
+    }).catch(() => setProfileLoading(false));
+  }, []);
 
   const selectedCategory = CATEGORIES.find(c => c.name === form.category);
 
@@ -63,6 +74,21 @@ export default function Sell() {
       <h1 className="font-display text-4xl text-foreground mb-2">LIST YOUR SHIT</h1>
       <p className="text-sm text-muted-foreground mb-8">Be honest. Be detailed. Liars get banned.</p>
 
+      {profileLoading ? (
+        <div className="flex items-center justify-center py-20">
+          <div className="w-8 h-8 border-4 border-muted border-t-primary rounded-full animate-spin"></div>
+        </div>
+      ) : !profile?.onboarded ? (
+        <div className="bg-card border border-border rounded-lg p-8 text-center">
+          <p className="font-display text-2xl text-foreground mb-2">VERIFICATION REQUIRED</p>
+          <p className="text-sm text-muted-foreground mb-6">
+            You need to complete Stripe onboarding before you can list items. This ensures you can receive payouts.
+          </p>
+          <Button onClick={() => navigate('/dashboard')} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase tracking-wider">
+            Go to Dashboard
+          </Button>
+        </div>
+      ) : (
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Images */}
         <div>
@@ -193,6 +219,7 @@ export default function Sell() {
           {loading ? 'Listing...' : 'LIST IT'}
         </Button>
       </form>
+      )}
     </div>
   );
 }
