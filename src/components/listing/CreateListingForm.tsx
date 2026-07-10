@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { PhotoUpload } from './PhotoUpload';
+import { BarcodeScanner } from '../common/BarcodeScanner';
 
 const CATEGORIES = [
   'Electronics', 'Fashion & Apparel', 'Home & Garden', 'Automotive',
@@ -19,6 +20,7 @@ export function CreateListingForm() {
   const [photos, setPhotos] = useState<File[]>([]);
   const [confirmedPhotos, setConfirmedPhotos] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showScanner, setShowScanner] = useState(false);
 
   const showSize = ['Fashion & Apparel', 'Sports & Outdoors'].includes(category);
   const showExpiration = category === 'Beauty & Personal Wellness';
@@ -44,15 +46,32 @@ export function CreateListingForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (photos.length < 2 || !confirmedPhotos) {
       alert("You must upload at least 2 photos and confirm they are of the actual item.");
       return;
     }
 
     setIsSubmitting(true);
-    // TODO: Submit to Base44
-    console.log("Submitting listing...", { ...formData, category, photos });
+
+    // TODO: Submit to Base44 here
+    console.log("Submitting listing...", { 
+      ...formData, 
+      category, 
+      photos, 
+      confirmedPhotos 
+    });
+
     setIsSubmitting(false);
+  };
+
+  // Barcode Scanner Handler
+  const handleBarcodeScan = (upcCode: string) => {
+    setFormData(prev => ({
+      ...prev,
+      upc: upcCode
+    }));
+    setShowScanner(false);
   };
 
   return (
@@ -67,8 +86,8 @@ export function CreateListingForm() {
             key={index}
             onClick={() => setActiveTab(index)}
             className={`px-6 py-3 font-medium transition-colors ${
-              activeTab === index 
-                ? 'border-b-2 border-red-600 text-white' 
+              activeTab === index
+                ? 'border-b-2 border-red-600 text-white'
                 : 'text-zinc-400 hover:text-white'
             }`}
           >
@@ -97,54 +116,117 @@ export function CreateListingForm() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block mb-2 text-sm">Title *</label>
-                <input type="text" value={formData.title} onChange={(e) => setFormData({...formData, title: e.target.value})} className="w-full bg-zinc-900 border border-zinc-700 rounded p-3" required />
+                <input 
+                  type="text" 
+                  value={formData.title} 
+                  onChange={(e) => setFormData({...formData, title: e.target.value})} 
+                  className="w-full bg-zinc-900 border border-zinc-700 rounded p-3" 
+                  required 
+                />
               </div>
               <div>
                 <label className="block mb-2 text-sm">Price *</label>
-                <input type="number" value={formData.price} onChange={(e) => setFormData({...formData, price: e.target.value})} className="w-full bg-zinc-900 border border-zinc-700 rounded p-3" required />
+                <input 
+                  type="number" 
+                  value={formData.price} 
+                  onChange={(e) => setFormData({...formData, price: e.target.value})} 
+                  className="w-full bg-zinc-900 border border-zinc-700 rounded p-3" 
+                  required 
+                />
               </div>
             </div>
 
             <div>
               <label className="block mb-2 text-sm">Description</label>
-              <textarea value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} className="w-full bg-zinc-900 border border-zinc-700 rounded p-3 h-28" />
+              <textarea 
+                value={formData.description} 
+                onChange={(e) => setFormData({...formData, description: e.target.value})} 
+                className="w-full bg-zinc-900 border border-zinc-700 rounded p-3 h-28" 
+              />
             </div>
           </div>
         )}
 
-        {/* Tab 2: Details (Conditional Fields) */}
+        {/* Tab 2: Details */}
         {activeTab === 1 && (
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {showSize && (
                 <div>
                   <label className="block mb-2 text-sm">Size *</label>
-                  <input type="text" value={formData.size} onChange={(e) => setFormData({...formData, size: e.target.value})} className="w-full bg-zinc-900 border border-zinc-700 rounded p-3" required />
+                  <input 
+                    type="text" 
+                    value={formData.size} 
+                    onChange={(e) => setFormData({...formData, size: e.target.value})} 
+                    className="w-full bg-zinc-900 border border-zinc-700 rounded p-3" 
+                    required 
+                  />
                 </div>
               )}
+
               {showExpiration && (
                 <div>
                   <label className="block mb-2 text-sm">Expiration Date *</label>
-                  <input type="date" value={formData.expirationDate} onChange={(e) => setFormData({...formData, expirationDate: e.target.value})} className="w-full bg-zinc-900 border border-zinc-700 rounded p-3" required />
+                  <input 
+                    type="date" 
+                    value={formData.expirationDate} 
+                    onChange={(e) => setFormData({...formData, expirationDate: e.target.value})} 
+                    className="w-full bg-zinc-900 border border-zinc-700 rounded p-3" 
+                    required 
+                  />
                 </div>
               )}
+
               {showYearModel && (
                 <div>
                   <label className="block mb-2 text-sm">Year / Model #</label>
-                  <input type="text" value={formData.yearOrModel} onChange={(e) => setFormData({...formData, yearOrModel: e.target.value})} className="w-full bg-zinc-900 border border-zinc-700 rounded p-3" />
+                  <input 
+                    type="text" 
+                    value={formData.yearOrModel} 
+                    onChange={(e) => setFormData({...formData, yearOrModel: e.target.value})} 
+                    className="w-full bg-zinc-900 border border-zinc-700 rounded p-3" 
+                  />
                 </div>
               )}
+
               <div>
                 <label className="block mb-2 text-sm">Color</label>
-                <input type="text" value={formData.color} onChange={(e) => setFormData({...formData, color: e.target.value})} className="w-full bg-zinc-900 border border-zinc-700 rounded p-3" />
+                <input 
+                  type="text" 
+                  value={formData.color} 
+                  onChange={(e) => setFormData({...formData, color: e.target.value})} 
+                  className="w-full bg-zinc-900 border border-zinc-700 rounded p-3" 
+                />
               </div>
+
+              {/* UPC with Scan Button */}
               <div>
                 <label className="block mb-2 text-sm">UPC / SKU #</label>
-                <input type="text" value={formData.upc} onChange={(e) => setFormData({...formData, upc: e.target.value})} className="w-full bg-zinc-900 border border-zinc-700 rounded p-3" />
+                <div className="flex gap-2">
+                  <input 
+                    type="text" 
+                    value={formData.upc} 
+                    onChange={(e) => setFormData({...formData, upc: e.target.value})} 
+                    className="flex-1 bg-zinc-900 border border-zinc-700 rounded p-3" 
+                  />
+                  <button 
+                    type="button" 
+                    onClick={() => setShowScanner(true)}
+                    className="px-4 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded flex items-center justify-center"
+                  >
+                    📷 Scan
+                  </button>
+                </div>
               </div>
+
               <div>
                 <label className="block mb-2 text-sm">Quantity</label>
-                <input type="number" value={formData.quantity} onChange={(e) => setFormData({...formData, quantity: e.target.value})} className="w-full bg-zinc-900 border border-zinc-700 rounded p-3" />
+                <input 
+                  type="number" 
+                  value={formData.quantity} 
+                  onChange={(e) => setFormData({...formData, quantity: e.target.value})} 
+                  className="w-full bg-zinc-900 border border-zinc-700 rounded p-3" 
+                />
               </div>
             </div>
           </div>
@@ -176,25 +258,42 @@ export function CreateListingForm() {
         {/* Navigation Buttons */}
         <div className="flex justify-between pt-6">
           {activeTab > 0 && (
-            <button type="button" onClick={() => setActiveTab(activeTab - 1)} className="px-6 py-2 border border-zinc-700 rounded">
+            <button 
+              type="button" 
+              onClick={() => setActiveTab(activeTab - 1)} 
+              className="px-6 py-2 border border-zinc-700 rounded"
+            >
               Back
             </button>
           )}
+
           {activeTab < 2 ? (
-            <button type="button" onClick={handleNext} className="ml-auto bg-zinc-800 hover:bg-zinc-700 px-8 py-2 rounded">
+            <button 
+              type="button" 
+              onClick={handleNext} 
+              className="ml-auto bg-zinc-800 hover:bg-zinc-700 px-8 py-2 rounded"
+            >
               Continue
             </button>
           ) : (
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               disabled={isSubmitting}
-              className="ml-auto bg-red-600 hover:bg-red-700 px-8 py-2 rounded font-bold"
+              className="ml-auto bg-red-600 hover:bg-red-700 px-8 py-2 rounded font-bold disabled:bg-zinc-700"
             >
               {isSubmitting ? 'LISTING...' : 'LIST ITEM — $0.20'}
             </button>
           )}
         </div>
       </form>
+
+      {/* Barcode Scanner Modal */}
+      {showScanner && (
+        <BarcodeScanner 
+          onScan={handleBarcodeScan} 
+          onClose={() => setShowScanner(false)} 
+        />
+      )}
     </div>
   );
 }
