@@ -1,0 +1,20 @@
+// Example validation before creating listing in Base44
+function validateListing(data: any) {
+  const errors: string[] = [];
+
+  if (!data.category) errors.push("Category is required");
+  if (!data.title) errors.push("Title is required");
+  if (!data.price || data.price <= 0) errors.push("Valid price is required");
+  if (!data.photos || data.photos.length < 2) errors.push("Minimum 2 photos required");
+  if (!data.confirmedPhotos) errors.push("You must confirm photos are of the actual item");
+
+  // Category-specific validation
+  if (data.category === 'Beauty & Personal Wellness' && !data.expirationDate) {
+    errors.push("Expiration date is required for Beauty & Personal Wellness items");
+  }
+  if (['Fashion & Apparel', 'Sports & Outdoors'].includes(data.category) && !data.size) {
+    errors.push("Size is required for this category");
+  }
+
+  return errors;
+}
