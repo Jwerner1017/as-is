@@ -55,6 +55,9 @@
     "banned": {
       "type": "boolean",
       "default": false
+    },
+    "stripe_account_id": {
+      "type": "string"
     }
   },
   "required": [

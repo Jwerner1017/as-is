@@ -37,6 +37,15 @@ export default function ListingDetail() {
     load();
   }, [id]);
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('payment') === 'success') {
+      toast({ title: "Payment Successful!", description: "Your purchase is complete. Sold As Is." });
+    } else if (params.get('payment') === 'cancelled') {
+      toast({ title: "Payment Cancelled", description: "Your purchase was not completed.", variant: "destructive" });
+    }
+  }, []);
+
   if (loading) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-8">
@@ -76,18 +85,9 @@ export default function ListingDetail() {
 
   const handleAction = async (type) => {
     setShowConfirm(null);
-    let finalPrice = 0;
-    let purchaseType = type;
-
-    if (type === 'buy_now') finalPrice = listing.price;
-    if (type === 'rage_buy') finalPrice = parseFloat(rageBuyPrice);
-    if (type === 'all_mine') finalPrice = parseFloat(allMinePrice);
-    if (type === 'bid') {
-      finalPrice = parseFloat(bidAmount);
-      purchaseType = 'bid';
-    }
 
     if (type === 'bid') {
+      const finalPrice = parseFloat(bidAmount);
       await base44.entities.Bid.create({
         listing_id: listing.id,
         bidder_id: user?.id,
@@ -109,27 +109,24 @@ export default function ListingDetail() {
       return;
     }
 
-    const platformFee = finalPrice * 0.10;
-    await base44.entities.Order.create({
-      listing_id: listing.id,
-      listing_title: listing.title,
-      buyer_id: user?.id,
-      buyer_name: user?.full_name || 'Anonymous',
-      seller_id: listing.seller_id,
-      seller_name: listing.seller_name,
-      amount: finalPrice,
-      platform_fee: platformFee,
-      seller_payout: finalPrice - platformFee,
-      purchase_type: purchaseType === 'buy_now' ? 'buy_now' : purchaseType,
-      image_url: images[0]
-    });
-    await base44.entities.Listing.update(listing.id, {
-      status: 'sold',
-      final_price: finalPrice,
-      buyer_id: user?.id,
-      sold_date: new Date().toISOString()
-    });
-    setListing(prev => ({ ...prev, status: 'sold', final_price: finalPrice }));
+    if (window.self !== window.top) {
+      toast({ title: "Cannot checkout", description: "Checkout works only from a published app.", variant: "destructive" });
+      return;
+    }
+
+    try {
+      const res = await base44.functions.invoke('stripe-checkout', {
+        listing_id: listing.id,
+        buyer_id: user?.id,
+        buyer_name: user?.full_name || 'Anonymous',
+        purchase_type: type
+      });
+      if (res.data?.url) {
+        window.location.href = res.data.url;
+      }
+    } catch (e) {
+      toast({ title: "Payment Error", description: e.response?.data?.error || e.message, variant: "destructive" });
+    }
   };
 
   const confirmMessages = {

@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/use-toast';
+import StripeOnboarding from '@/components/seller/StripeOnboarding';
 
 const LEVEL_COLORS = {
   'New': 'bg-muted text-foreground',
@@ -20,6 +21,7 @@ export default function Dashboard() {
   const [listings, setListings] = useState([]);
   const [orders, setOrders] = useState([]);
   const [purchases, setPurchases] = useState([]);
+  const [sellerProfile, setSellerProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
@@ -28,14 +30,16 @@ export default function Dashboard() {
       try {
         const u = await base44.auth.me();
         setUser(u);
-        const [l, o, p] = await Promise.all([
+        const [l, o, p, sp] = await Promise.all([
           base44.entities.Listing.filter({ seller_id: u.id }, '-created_date', 50),
           base44.entities.Order.filter({ seller_id: u.id }, '-created_date', 50),
-          base44.entities.Order.filter({ buyer_id: u.id }, '-created_date', 50)
+          base44.entities.Order.filter({ buyer_id: u.id }, '-created_date', 50),
+          base44.entities.SellerProfile.filter({ user_id: u.id })
         ]);
         setListings(l);
         setOrders(o);
         setPurchases(p);
+        setSellerProfile(sp[0] || null);
       } catch (e) {
         console.error(e);
       } finally {
@@ -110,6 +114,8 @@ export default function Dashboard() {
           <p className="text-xs text-muted-foreground">Items Sold</p>
         </div>
       </div>
+
+      <StripeOnboarding sellerProfile={sellerProfile} />
 
       <Tabs defaultValue="orders" className="space-y-4">
         <TabsList className="bg-muted border border-border">
