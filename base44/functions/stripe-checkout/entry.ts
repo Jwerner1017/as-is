@@ -7,8 +7,13 @@ const PERCENTAGE_FEE = 0.02;
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+    const user = await base44.auth.me();
+    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+
     const body = await req.json();
-    const { listing_id, buyer_id, buyer_name, purchase_type, shipping_address, shipping_cost } = body;
+    const { listing_id, purchase_type, shipping_address, shipping_cost } = body;
+    const buyer_id = user.id;
+    const buyer_name = user.full_name || '';
 
     if (!listing_id) return Response.json({ error: 'listing_id required' }, { status: 400 });
 
