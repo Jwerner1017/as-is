@@ -11,7 +11,7 @@ Deno.serve(async (req) => {
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     const body = await req.json();
-    const { listing_id, purchase_type, shipping_address, shipping_cost } = body;
+    const { listing_id, purchase_type, shipping_address, shipping_rate_id } = body;
     const buyer_id = user.id;
     const buyer_name = user.full_name || '';
 
@@ -31,6 +31,35 @@ Deno.serve(async (req) => {
     else finalPrice = displayPrice;
 
     finalPrice = Math.round(finalPrice * 100) / 100;
+
+    // Validate shipping cost server-side — never trust client-supplied shipping_cost
+    let validatedShippingCost = 0;
+    let validatedCarrier = '';
+    if (listing.shipping_type === 'Free Shipping') {
+      validatedShippingCost = 0;
+    } else if (listing.shipping_type === 'Flat Rate') {
+      validatedShippingCost = listing.shipping_cost || 0;
+    } else if (listing.shipping_type === 'Calculated') {
+      if (!shipping_rate_id) {
+        return Response.json({ error: 'Shipping rate selection required for calculated shipping' }, { status: 400 });
+      }
+      if (!shipping_address?.zip || !shipping_address?.state) {
+        return Response.json({ error: 'Shipping address required for calculated shipping' }, { status: 400 });
+      }
+      const rateRes = await fetch(`https://api.goshippo.com/rates/${encodeURIComponent(shipping_rate_id)}`, {
+        headers: { 'Authorization': `ShippoToken ${Deno.env.get('SHIPPO_API_KEY')}` }
+      });
+      const rateData = await rateRes.json();
+      if (!rateRes.ok || !rateData.amount) {
+        console.error('Shippo rate validation error:', JSON.stringify(rateData));
+        return Response.json({ error: 'Invalid or expired shipping rate' }, { status: 400 });
+      }
+      validatedShippingCost = parseFloat(rateData.amount);
+      if (isNaN(validatedShippingCost) || validatedShippingCost < 0) {
+        return Response.json({ error: 'Invalid shipping rate amount' }, { status: 400 });
+      }
+      validatedCarrier = rateData.carrier || '';
+    }
 
     const sellerProfiles = await base44.asServiceRole.entities.SellerProfile.filter({ user_id: listing.seller_id });
     const sellerProfile = sellerProfiles[0];
@@ -59,11 +88,11 @@ Deno.serve(async (req) => {
           },
           quantity: 1,
         },
-        ...(shipping_cost ? [{
+        ...(validatedShippingCost > 0 ? [{
           price_data: {
             currency: 'usd',
             product_data: { name: 'Shipping' },
-            unit_amount: Math.round(shipping_cost * 100),
+            unit_amount: Math.round(validatedShippingCost * 100),
           },
           quantity: 1,
         }] : [])
@@ -86,7 +115,9 @@ Deno.serve(async (req) => {
         final_price: finalPrice.toString(),
         platform_fee: platformFee.toString(),
         seller_payout: sellerPayout.toString(),
-        shipping_cost: (shipping_cost || 0).toString(),
+        shipping_cost: validatedShippingCost.toString(),
+        shipping_rate_id: shipping_rate_id || '',
+        carrier: validatedCarrier,
         ship_to_name: shipping_address?.name || '',
         ship_to_street1: shipping_address?.street1 || '',
         ship_to_city: shipping_address?.city || '',

@@ -64,13 +64,13 @@ export default function Dashboard() {
   const totalRevenue = orders.reduce((sum, o) => sum + (o.seller_payout || 0), 0);
 
   const handleShip = async (orderId, trackingNumber) => {
-    await base44.entities.Order.update(orderId, {
-      status: 'shipped',
-      tracking_number: trackingNumber,
-      shipped_date: new Date().toISOString()
-    });
-    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'shipped', tracking_number: trackingNumber } : o));
-    toast({ title: "Shipped!", description: "Tracking updated. Now we wait." });
+    try {
+      await base44.functions.invoke('update-order-shipped', { order_id: orderId, tracking_number: trackingNumber });
+      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'shipped', tracking_number: trackingNumber } : o));
+      toast({ title: "Shipped!", description: "Tracking updated. Now we wait." });
+    } catch (e) {
+      toast({ title: "Error", description: e.response?.data?.error || e.message, variant: "destructive" });
+    }
   };
 
   if (loading) {

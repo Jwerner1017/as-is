@@ -135,7 +135,7 @@ export default function ListingDetail() {
           zip: shippingInfo.zip,
           country: 'US'
         } : null,
-        shipping_cost: shippingInfo?.shipping_cost
+        shipping_rate_id: shippingInfo?.shipping_rate_id
       });
       if (res.data?.url) {
         window.location.href = res.data.url;
