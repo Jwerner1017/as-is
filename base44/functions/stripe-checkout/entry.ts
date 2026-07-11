@@ -8,7 +8,7 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const body = await req.json();
-    const { listing_id, buyer_id, buyer_name, purchase_type } = body;
+    const { listing_id, buyer_id, buyer_name, purchase_type, shipping_address, shipping_cost } = body;
 
     if (!listing_id) return Response.json({ error: 'listing_id required' }, { status: 400 });
 
@@ -42,17 +42,27 @@ Deno.serve(async (req) => {
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
-      line_items: [{
-        price_data: {
-          currency: 'usd',
-          product_data: {
-            name: listing.title,
-            description: listing.description?.substring(0, 200) || undefined,
+      line_items: [
+        {
+          price_data: {
+            currency: 'usd',
+            product_data: {
+              name: listing.title,
+              description: listing.description?.substring(0, 200) || undefined,
+            },
+            unit_amount: Math.round(finalPrice * 100),
           },
-          unit_amount: Math.round(finalPrice * 100),
+          quantity: 1,
         },
-        quantity: 1,
-      }],
+        ...(shipping_cost ? [{
+          price_data: {
+            currency: 'usd',
+            product_data: { name: 'Shipping' },
+            unit_amount: Math.round(shipping_cost * 100),
+          },
+          quantity: 1,
+        }] : [])
+      ],
       mode: 'payment',
       success_url: `${origin}/listing/${listing_id}?payment=success`,
       cancel_url: `${origin}/listing/${listing_id}?payment=cancelled`,
@@ -71,6 +81,13 @@ Deno.serve(async (req) => {
         final_price: finalPrice.toString(),
         platform_fee: platformFee.toString(),
         seller_payout: sellerPayout.toString(),
+        shipping_cost: (shipping_cost || 0).toString(),
+        ship_to_name: shipping_address?.name || '',
+        ship_to_street1: shipping_address?.street1 || '',
+        ship_to_city: shipping_address?.city || '',
+        ship_to_state: shipping_address?.state || '',
+        ship_to_zip: shipping_address?.zip || '',
+        ship_to_country: shipping_address?.country || 'US',
       },
     });
 

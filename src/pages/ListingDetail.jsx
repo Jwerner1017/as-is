@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useToast } from '@/components/ui/use-toast';
 import moment from 'moment';
+import ShippingAddressForm from '@/components/shipping/ShippingAddressForm';
 
 export default function ListingDetail() {
   const { id } = useParams();
@@ -18,6 +19,7 @@ export default function ListingDetail() {
   const [showConfirm, setShowConfirm] = useState(null); // 'buy_now' | 'rage_buy' | 'all_mine' | 'bid'
   const [selectedImage, setSelectedImage] = useState(0);
   const [user, setUser] = useState(null);
+  const [shippingInfo, setShippingInfo] = useState(null);
 
   useEffect(() => {
     async function load() {
@@ -109,6 +111,11 @@ export default function ListingDetail() {
       return;
     }
 
+    if (listing.shipping_type === 'Calculated' && !shippingInfo) {
+      toast({ title: "Shipping Required", description: "Enter your address and select a shipping rate first.", variant: "destructive" });
+      return;
+    }
+
     if (window.self !== window.top) {
       toast({ title: "Cannot checkout", description: "Checkout works only from a published app.", variant: "destructive" });
       return;
@@ -119,7 +126,16 @@ export default function ListingDetail() {
         listing_id: listing.id,
         buyer_id: user?.id,
         buyer_name: user?.full_name || 'Anonymous',
-        purchase_type: type
+        purchase_type: type,
+        shipping_address: shippingInfo ? {
+          name: shippingInfo.name,
+          street1: shippingInfo.street1,
+          city: shippingInfo.city,
+          state: shippingInfo.state,
+          zip: shippingInfo.zip,
+          country: 'US'
+        } : null,
+        shipping_cost: shippingInfo?.shipping_cost
       });
       if (res.data?.url) {
         window.location.href = res.data.url;
@@ -265,6 +281,10 @@ export default function ListingDetail() {
               )}
             </div>
           </div>
+
+          {listing.shipping_type === 'Calculated' && !isSold && (
+            <ShippingAddressForm listing={listing} onRateSelected={setShippingInfo} />
+          )}
 
           {/* Description */}
           <div>

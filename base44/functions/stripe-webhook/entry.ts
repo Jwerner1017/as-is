@@ -38,6 +38,13 @@ Deno.serve(async (req) => {
           purchase_type: m.purchase_type || 'buy_now',
           status: 'pending_shipment',
           image_url: listing?.images?.[0] || '',
+          shipping_cost: parseFloat(m.shipping_cost) || 0,
+          ship_to_name: m.ship_to_name || '',
+          ship_to_street1: m.ship_to_street1 || '',
+          ship_to_city: m.ship_to_city || '',
+          ship_to_state: m.ship_to_state || '',
+          ship_to_zip: m.ship_to_zip || '',
+          ship_to_country: m.ship_to_country || 'US',
         });
 
         await base44.asServiceRole.entities.Listing.update(m.listing_id, {

@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { Package, Truck, DollarSign, Trophy, BarChart3, Radio, Plus, ChevronRight } from 'lucide-react';
+import { Package, Truck, DollarSign, Trophy, BarChart3, Radio, Plus, ChevronRight, Printer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/use-toast';
 import StripeOnboarding from '@/components/seller/StripeOnboarding';
+import PrintLabelDialog from '@/components/shipping/PrintLabelDialog';
+import ShipFromAddress from '@/components/shipping/ShipFromAddress';
 
 const LEVEL_COLORS = {
   'New': 'bg-muted text-foreground',
@@ -23,6 +25,7 @@ export default function Dashboard() {
   const [purchases, setPurchases] = useState([]);
   const [sellerProfile, setSellerProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [labelOrder, setLabelOrder] = useState(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -48,6 +51,12 @@ export default function Dashboard() {
     }
     load();
   }, []);
+
+  const reloadProfile = async () => {
+    const u = await base44.auth.me();
+    const sp = await base44.entities.SellerProfile.filter({ user_id: u.id });
+    setSellerProfile(sp[0] || null);
+  };
 
   const activeListings = listings.filter(l => l.status === 'active');
   const soldListings = listings.filter(l => l.status === 'sold');
@@ -117,6 +126,10 @@ export default function Dashboard() {
 
       <StripeOnboarding sellerProfile={sellerProfile} />
 
+      {sellerProfile?.onboarded && !sellerProfile?.ship_from_street1 && (
+        <ShipFromAddress sellerProfile={sellerProfile} onSaved={reloadProfile} />
+      )}
+
       <Tabs defaultValue="orders" className="space-y-4">
         <TabsList className="bg-muted border border-border">
           <TabsTrigger value="orders">Ship That Shit ({pendingShipment.length})</TabsTrigger>
@@ -135,7 +148,7 @@ export default function Dashboard() {
             </div>
           )}
           {pendingShipment.map(order => (
-            <OrderShipCard key={order.id} order={order} onShip={handleShip} />
+            <OrderShipCard key={order.id} order={order} onShip={handleShip} onPrintLabel={setLabelOrder} />
           ))}
         </TabsContent>
 
@@ -208,11 +221,13 @@ export default function Dashboard() {
           ))}
         </TabsContent>
       </Tabs>
+
+      <PrintLabelDialog order={labelOrder} open={!!labelOrder} onClose={() => setLabelOrder(null)} onShipped={handleShip} />
     </div>
   );
 }
 
-function OrderShipCard({ order, onShip }) {
+function OrderShipCard({ order, onShip, onPrintLabel }) {
   const [tracking, setTracking] = useState('');
   return (
     <div className="bg-card border border-primary/30 rounded-lg p-4">
@@ -226,12 +241,25 @@ function OrderShipCard({ order, onShip }) {
           <p className="text-sm text-green-500 font-bold">Payout: ${order.seller_payout?.toFixed(2)}</p>
         </div>
       </div>
+      {order.ship_to_street1 && (
+        <div className="text-xs text-muted-foreground mb-3 pb-3 border-b border-border">
+          <p className="font-bold uppercase mb-1">Ship To:</p>
+          <p>{order.ship_to_name}</p>
+          <p>{order.ship_to_street1}</p>
+          <p>{order.ship_to_city}, {order.ship_to_state} {order.ship_to_zip}</p>
+        </div>
+      )}
       <div className="flex gap-2">
         <Input value={tracking} onChange={e => setTracking(e.target.value)} placeholder="Enter tracking number" className="flex-1 bg-muted border-border text-sm" />
         <Button onClick={() => { if (tracking) onShip(order.id, tracking); }} disabled={!tracking} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase tracking-wider text-xs">
           SHIP THAT SHIT
         </Button>
       </div>
+      {order.ship_to_street1 && (
+        <Button onClick={() => onPrintLabel(order)} variant="outline" className="w-full mt-2 text-xs uppercase tracking-wider">
+          <Printer className="w-3 h-3 mr-1" /> Print Label via Shippo
+        </Button>
+      )}
     </div>
   );
 }
