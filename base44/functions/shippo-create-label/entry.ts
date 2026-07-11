@@ -3,6 +3,9 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+    const user = await base44.auth.me();
+    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+
     const body = await req.json();
     const { order_id, rate_id } = body;
 
@@ -12,6 +15,10 @@ Deno.serve(async (req) => {
 
     const order = await base44.asServiceRole.entities.Order.get(order_id);
     if (!order) return Response.json({ error: 'Order not found' }, { status: 404 });
+
+    if (order.seller_id !== user.id) {
+      return Response.json({ error: 'Forbidden: only the seller can create labels for this order' }, { status: 403 });
+    }
 
     const response = await fetch('https://api.goshippo.com/transactions/', {
       method: 'POST',
