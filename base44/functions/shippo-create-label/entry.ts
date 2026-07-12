@@ -51,6 +51,20 @@ Deno.serve(async (req) => {
       shipped_date: new Date().toISOString()
     });
 
+    // Send shipping notification email to buyer
+    try {
+      const buyer = await base44.asServiceRole.entities.User.get(order.buyer_id);
+      if (buyer?.email) {
+        await base44.asServiceRole.integrations.Core.SendEmail({
+          to: buyer.email,
+          subject: `Your AS IS order has shipped!`,
+          body: `Your order "${order.listing_title}" has been shipped.\n\nTracking: ${trackingNumber}\nCarrier: ${carrier || 'N/A'}\n\nYou'll receive updates as your package moves. No refunds. No crying. Just deals.`
+        });
+      }
+    } catch (emailError) {
+      console.error('Failed to send shipping email:', emailError);
+    }
+
     return Response.json({ label_url: labelUrl, tracking_number: trackingNumber, carrier: carrier });
   } catch (error) {
     console.error('Shippo create label error:', error);
