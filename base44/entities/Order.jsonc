@@ -103,6 +103,10 @@
     "shipping_rate_id": {
       "type": "string",
       "description": "Shippo rate object ID for label purchase"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 1000
     }
   },
   "required": [
