@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { Package, Truck, DollarSign, Trophy, BarChart3, Radio, Plus, ChevronRight, Printer } from 'lucide-react';
+import { Package, Truck, DollarSign, Trophy, BarChart3, Radio, Plus, ChevronRight, Printer, Loader2, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/components/ui/use-toast';
 import StripeOnboarding from '@/components/seller/StripeOnboarding';
 import PrintLabelDialog from '@/components/shipping/PrintLabelDialog';
@@ -31,6 +32,8 @@ export default function Dashboard() {
   const [labelOrder, setLabelOrder] = useState(null);
   const [reviews, setReviews] = useState([]);
   const [reviewOrder, setReviewOrder] = useState(null);
+  const [selectedOrders, setSelectedOrders] = useState(new Set());
+  const [bulkLoading, setBulkLoading] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -87,6 +90,7 @@ export default function Dashboard() {
   const activeListings = listings.filter(l => l.status === 'active');
   const soldListings = listings.filter(l => l.status === 'sold');
   const pendingShipment = orders.filter(o => o.status === 'pending_shipment');
+  const shippableOrders = pendingShipment.filter(o => o.ship_to_street1);
   const totalRevenue = orders.reduce((sum, o) => sum + (o.seller_payout || 0), 0);
 
   const handleShip = async (orderId, trackingNumber) => {
@@ -96,6 +100,48 @@ export default function Dashboard() {
       toast({ title: "Shipped!", description: "Tracking updated. Now we wait." });
     } catch (e) {
       toast({ title: "Error", description: e.response?.data?.error || e.message, variant: "destructive" });
+    }
+  };
+
+  const toggleOrderSelection = (orderId) => {
+    setSelectedOrders(prev => {
+      const next = new Set(prev);
+      if (next.has(orderId)) next.delete(orderId);
+      else next.add(orderId);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedOrders.size === shippableOrders.length) {
+      setSelectedOrders(new Set());
+    } else {
+      setSelectedOrders(new Set(shippableOrders.map(o => o.id)));
+    }
+  };
+
+  const handleBulkShip = async () => {
+    if (selectedOrders.size === 0) return;
+    setBulkLoading(true);
+    try {
+      const res = await base44.functions.invoke('shippo-bulk-create-labels', {
+        order_ids: Array.from(selectedOrders)
+      });
+      const data = res.data || res;
+      const succeeded = data.succeeded || 0;
+      const failed = data.failed || 0;
+      const o = await base44.entities.Order.filter({ seller_id: user.id }, '-created_date', 50);
+      setOrders(o);
+      setSelectedOrders(new Set());
+      if (failed > 0) {
+        toast({ title: `Shipped ${succeeded}, ${failed} failed`, description: "Check individual orders for errors.", variant: "destructive" });
+      } else {
+        toast({ title: `Shipped ${succeeded} order${succeeded === 1 ? '' : 's'}!`, description: "Labels generated. Buyers notified." });
+      }
+    } catch (e) {
+      toast({ title: "Bulk ship failed", description: e.response?.data?.error || e.message, variant: "destructive" });
+    } finally {
+      setBulkLoading(false);
     }
   };
 
@@ -178,8 +224,34 @@ export default function Dashboard() {
               <p className="text-sm mt-1">Go sell something first.</p>
             </div>
           )}
+          {shippableOrders.length > 0 && (
+            <div className="bg-card border border-border rounded-lg p-3 flex items-center gap-3 sticky top-2 z-10">
+              <Checkbox
+                checked={shippableOrders.length > 0 && selectedOrders.size === shippableOrders.length}
+                onCheckedChange={toggleSelectAll}
+              />
+              <span className="text-sm text-muted-foreground">
+                {selectedOrders.size > 0 ? `${selectedOrders.size} selected` : 'Select all shippable'}
+              </span>
+              <Button
+                onClick={handleBulkShip}
+                disabled={selectedOrders.size === 0 || bulkLoading}
+                className="ml-auto bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase tracking-wider text-xs"
+              >
+                {bulkLoading ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Zap className="w-4 h-4 mr-1" />}
+                {bulkLoading ? 'SHIPPING...' : 'SHIP ALL THAT SHIT'}
+              </Button>
+            </div>
+          )}
           {pendingShipment.map(order => (
-            <OrderShipCard key={order.id} order={order} onShip={handleShip} onPrintLabel={setLabelOrder} />
+            <OrderShipCard
+              key={order.id}
+              order={order}
+              onShip={handleShip}
+              onPrintLabel={setLabelOrder}
+              selected={selectedOrders.has(order.id)}
+              onToggleSelect={() => toggleOrderSelection(order.id)}
+            />
           ))}
         </TabsContent>
 
@@ -256,11 +328,14 @@ export default function Dashboard() {
   );
 }
 
-function OrderShipCard({ order, onShip, onPrintLabel }) {
+function OrderShipCard({ order, onShip, onPrintLabel, selected, onToggleSelect }) {
   const [tracking, setTracking] = useState('');
   return (
-    <div className="bg-card border border-primary/30 rounded-lg p-4">
+    <div className={`bg-card border rounded-lg p-4 transition-colors ${selected ? 'border-primary' : 'border-primary/30'}`}>
       <div className="flex items-center gap-4 mb-3">
+        {order.ship_to_street1 && (
+          <Checkbox checked={selected || false} onCheckedChange={onToggleSelect} className="shrink-0" />
+        )}
         <div className="w-16 h-16 rounded bg-muted overflow-hidden shrink-0">
           <img src={order.image_url || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100'} alt="" className="w-full h-full object-cover" />
         </div>
