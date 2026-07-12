@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { useToast } from '@/components/ui/use-toast';
 import moment from 'moment';
 import ShippingAddressForm from '@/components/shipping/ShippingAddressForm';
+import { StarRating } from '@/components/reviews/StarRating';
 
 export default function ListingDetail() {
   const { id } = useParams();
@@ -20,6 +21,7 @@ export default function ListingDetail() {
   const [selectedImage, setSelectedImage] = useState(0);
   const [user, setUser] = useState(null);
   const [shippingInfo, setShippingInfo] = useState(null);
+  const [sellerProfile, setSellerProfile] = useState(null);
 
   useEffect(() => {
     async function load() {
@@ -30,6 +32,10 @@ export default function ListingDetail() {
         ]);
         setListing(l);
         setUser(u);
+        if (l?.seller_id) {
+          const sp = await base44.entities.SellerProfile.filter({ user_id: l.seller_id });
+          setSellerProfile(sp[0] || null);
+        }
       } catch (e) {
         console.error(e);
       } finally {
@@ -269,6 +275,13 @@ export default function ListingDetail() {
           <div className="bg-card border border-border rounded-lg p-4">
             <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Seller</p>
             <p className="font-medium text-foreground">{listing.seller_name || 'Unknown Seller'}</p>
+            {sellerProfile?.review_count > 0 && (
+              <div className="flex items-center gap-2 mt-2">
+                <StarRating rating={sellerProfile.rating || 0} size="sm" />
+                <span className="text-sm font-bold text-foreground">{(sellerProfile.rating || 0).toFixed(1)}</span>
+                <span className="text-xs text-muted-foreground">({sellerProfile.review_count} review{sellerProfile.review_count === 1 ? '' : 's'})</span>
+              </div>
+            )}
           </div>
 
           {/* Shipping */}

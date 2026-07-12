@@ -10,6 +10,9 @@ import { useToast } from '@/components/ui/use-toast';
 import StripeOnboarding from '@/components/seller/StripeOnboarding';
 import PrintLabelDialog from '@/components/shipping/PrintLabelDialog';
 import ShipFromAddress from '@/components/shipping/ShipFromAddress';
+import ReviewDialog from '@/components/reviews/ReviewDialog';
+import PurchaseCard from '@/components/dashboard/PurchaseCard';
+import { StarRating } from '@/components/reviews/StarRating';
 
 const LEVEL_COLORS = {
   'New': 'bg-muted text-foreground',
@@ -26,6 +29,8 @@ export default function Dashboard() {
   const [sellerProfile, setSellerProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [labelOrder, setLabelOrder] = useState(null);
+  const [reviews, setReviews] = useState([]);
+  const [reviewOrder, setReviewOrder] = useState(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -33,16 +38,18 @@ export default function Dashboard() {
       try {
         const u = await base44.auth.me();
         setUser(u);
-        const [l, o, p, sp] = await Promise.all([
+        const [l, o, p, sp, rv] = await Promise.all([
           base44.entities.Listing.filter({ seller_id: u.id }, '-created_date', 50),
           base44.entities.Order.filter({ seller_id: u.id }, '-created_date', 50),
           base44.entities.Order.filter({ buyer_id: u.id }, '-created_date', 50),
-          base44.entities.SellerProfile.filter({ user_id: u.id })
+          base44.entities.SellerProfile.filter({ user_id: u.id }),
+          base44.entities.Review.filter({ buyer_id: u.id }, '-created_date', 50)
         ]);
         setListings(l);
         setOrders(o);
         setPurchases(p);
         setSellerProfile(sp[0] || null);
+        setReviews(rv);
       } catch (e) {
         console.error(e);
       } finally {
@@ -56,6 +63,25 @@ export default function Dashboard() {
     const u = await base44.auth.me();
     const sp = await base44.entities.SellerProfile.filter({ user_id: u.id });
     setSellerProfile(sp[0] || null);
+  };
+
+  const handleMarkDelivered = async (orderId) => {
+    try {
+      await base44.functions.invoke('mark-order-delivered', { order_id: orderId });
+      setPurchases(prev => prev.map(o => o.id === orderId ? { ...o, status: 'delivered' } : o));
+      toast({ title: "Marked Delivered", description: "You can now leave a review." });
+    } catch (e) {
+      toast({ title: "Error", description: e.response?.data?.error || e.message, variant: "destructive" });
+    }
+  };
+
+  const handleReviewSubmitted = async () => {
+    setReviewOrder(null);
+    const rv = await base44.entities.Review.filter({ buyer_id: user.id }, '-created_date', 50);
+    setReviews(rv);
+    const sp = await base44.entities.SellerProfile.filter({ user_id: user.id });
+    setSellerProfile(sp[0] || null);
+    toast({ title: "Review Posted!", description: "Thanks for the honesty." });
   };
 
   const activeListings = listings.filter(l => l.status === 'active');
@@ -121,6 +147,11 @@ export default function Dashboard() {
           <Trophy className="w-5 h-5 text-yellow-500 mb-2" />
           <p className="text-2xl font-bold text-yellow-500">{soldListings.length}</p>
           <p className="text-xs text-muted-foreground">Items Sold</p>
+        </div>
+        <div className="bg-card border border-border rounded-lg p-4">
+          <StarRating rating={sellerProfile?.rating || 0} size="sm" />
+          <p className="text-2xl font-bold text-foreground mt-1">{(sellerProfile?.rating || 0).toFixed(1)}</p>
+          <p className="text-xs text-muted-foreground">{sellerProfile?.review_count || 0} Review{(sellerProfile?.review_count || 0) === 1 ? '' : 's'}</p>
         </div>
       </div>
 
@@ -208,21 +239,19 @@ export default function Dashboard() {
             </div>
           )}
           {purchases.map(order => (
-            <div key={order.id} className="bg-card border border-border rounded-lg p-4 flex items-center gap-4">
-              <div className="w-16 h-16 rounded bg-muted overflow-hidden shrink-0">
-                <img src={order.image_url || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100'} alt="" className="w-full h-full object-cover" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-foreground truncate">{order.listing_title}</p>
-                <p className="text-sm text-primary font-bold">${order.amount?.toFixed(2)}</p>
-              </div>
-              <Badge variant="outline" className="text-[10px] capitalize">{order.status?.replace(/_/g, ' ')}</Badge>
-            </div>
+            <PurchaseCard
+              key={order.id}
+              order={order}
+              review={reviews.find(r => r.order_id === order.id)}
+              onMarkDelivered={handleMarkDelivered}
+              onReview={setReviewOrder}
+            />
           ))}
         </TabsContent>
       </Tabs>
 
       <PrintLabelDialog order={labelOrder} open={!!labelOrder} onClose={() => setLabelOrder(null)} onShipped={handleShip} />
+      <ReviewDialog order={reviewOrder} open={!!reviewOrder} onClose={() => setReviewOrder(null)} onSubmitted={handleReviewSubmitted} />
     </div>
   );
 }
