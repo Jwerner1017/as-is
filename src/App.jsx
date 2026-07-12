@@ -18,6 +18,8 @@ import Live from '@/pages/Live';
 import Policies from '@/pages/Policies';
 import Onboarding from '@/pages/Onboarding';
 import Settings from '@/pages/Settings';
+import About from '@/pages/About';
+import Contact from '@/pages/Contact';
 import AppLayout from '@/components/layout/AppLayout';
 
 const AuthenticatedApp = () => {
@@ -55,6 +57,8 @@ const AuthenticatedApp = () => {
         <Route path="/live" element={<Live />} />
         <Route path="/policies" element={<Policies />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/contact" element={<Contact />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>

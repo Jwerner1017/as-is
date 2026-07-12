@@ -33,6 +33,8 @@ export default function Footer() {
             <div className="flex flex-col gap-2">
               <Link to="/dashboard" className="text-xs text-muted-foreground hover:text-foreground">Dashboard</Link>
               <Link to="/settings" className="text-xs text-muted-foreground hover:text-foreground">Settings</Link>
+              <Link to="/about" className="text-xs text-muted-foreground hover:text-foreground">About</Link>
+              <Link to="/contact" className="text-xs text-muted-foreground hover:text-foreground">Contact</Link>
             </div>
           </div>
         </div>
