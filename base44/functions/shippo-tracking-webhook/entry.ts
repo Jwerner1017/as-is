@@ -1,9 +1,45 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
+async function verifyShippoSignature(req: Request, rawBody: string): Promise<boolean> {
+  const webhookSecret = Deno.env.get('SHIPPO_WEBHOOK_SECRET');
+  if (!webhookSecret) {
+    console.error('SHIPPO_WEBHOOK_SECRET not configured');
+    return false;
+  }
+
+  const signature = req.headers.get('X-Shippo-Signature-SHA256');
+  if (!signature) {
+    return false;
+  }
+
+  const key = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(webhookSecret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+
+  const mac = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(rawBody));
+  const expected = Array.from(new Uint8Array(mac))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+
+  return expected === signature;
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const body = await req.json();
+    const rawBody = await req.text();
+
+    // Verify the webhook is genuinely from Shippo
+    const isValid = await verifyShippoSignature(req, rawBody);
+    if (!isValid) {
+      return Response.json({ error: 'Invalid webhook signature' }, { status: 401 });
+    }
+
+    const body = JSON.parse(rawBody);
 
     // Shippo tracking webhook payload: { event, data: { tracking_number, tracking_status: { status, substatus, ... } } }
     const { data } = body;
