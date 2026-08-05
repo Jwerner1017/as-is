@@ -54,7 +54,15 @@ export default function Dashboard() {
         setListings(l);
         setOrders(o);
         setPurchases(p);
-        setSellerProfile(sp[0] || null);
+        // Auto-create a seller profile if one doesn't exist yet
+        let profile = sp[0];
+        if (!profile) {
+          profile = await base44.entities.SellerProfile.create({
+            user_id: u.id,
+            display_name: u.full_name || 'New Seller'
+          });
+        }
+        setSellerProfile(profile);
         setReviews(rv);
       } catch (e) {
         console.error(e);
@@ -70,6 +78,18 @@ export default function Dashboard() {
     const sp = await base44.entities.SellerProfile.filter({ user_id: u.id });
     setSellerProfile(sp[0] || null);
   };
+
+  // After returning from Stripe onboarding, poll Stripe directly to update the
+  // onboarded flag — don't rely solely on the webhook which may not have fired yet.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if ((params.get('stripe_return') === '1' || params.get('stripe_refresh') === '1') && sellerProfile?.id && sellerProfile.stripe_account_id) {
+      base44.functions.invoke('check-stripe-verification', { profile_id: sellerProfile.id })
+        .then(() => reloadProfile())
+        .then(() => toast({ title: "Stripe Connected", description: "Your payouts are set up. You can list items now." }))
+        .catch(err => console.error('Verification check failed:', err));
+    }
+  }, [sellerProfile?.id, sellerProfile?.stripe_account_id]);
 
   const handleMarkDelivered = async (orderId) => {
     try {

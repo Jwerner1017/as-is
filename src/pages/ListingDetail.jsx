@@ -26,12 +26,8 @@ export default function ListingDetail() {
   useEffect(() => {
     async function load() {
       try {
-        const [l, u] = await Promise.all([
-          base44.entities.Listing.get(id),
-          base44.auth.me()
-        ]);
+        const l = await base44.entities.Listing.get(id);
         setListing(l);
-        setUser(u);
         if (l?.seller_id) {
           const sp = await base44.entities.SellerProfile.filter({ user_id: l.seller_id });
           setSellerProfile(sp[0] || null);
@@ -40,6 +36,13 @@ export default function ListingDetail() {
         console.error(e);
       } finally {
         setLoading(false);
+      }
+      // Auth is optional — don't let a failed me() block the listing from rendering
+      try {
+        const u = await base44.auth.me();
+        setUser(u);
+      } catch {
+        // Not logged in — user can still browse, just can't buy/bid
       }
     }
     load();
@@ -93,6 +96,12 @@ export default function ListingDetail() {
 
   const handleAction = async (type) => {
     setShowConfirm(null);
+
+    if (!user) {
+      toast({ title: "Login Required", description: "You need to log in to buy or bid.", variant: "destructive" });
+      base44.auth.redirectToLogin(window.location.href);
+      return;
+    }
 
     if (type === 'bid') {
       const finalPrice = parseFloat(bidAmount);
