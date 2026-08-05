@@ -157,6 +157,26 @@
       "type": "boolean",
       "default": false
     },
+    "year": {
+      "type": "string",
+      "description": "Model year or production year"
+    },
+    "model": {
+      "type": "string",
+      "description": "Model name or number"
+    },
+    "upc": {
+      "type": "string",
+      "description": "Universal Product Code"
+    },
+    "expiration_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Expiration date for perishable items"
+    },
+    "color": {
+      "type": "string"
+    },
     "highest_bidder_id": {
       "type": "string"
     },

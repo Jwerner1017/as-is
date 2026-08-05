@@ -299,6 +299,45 @@ export default function ListingDetail() {
             <ShippingAddressForm listing={listing} onRateSelected={setShippingInfo} />
           )}
 
+          {/* Product Details */}
+          {(listing.year || listing.model || listing.upc || listing.expiration_date || listing.color) && (
+            <div className="bg-card border border-border rounded-lg p-4">
+              <h3 className="font-display text-lg text-foreground mb-3">PRODUCT DETAILS</h3>
+              <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-sm">
+                {listing.year && (
+                  <div>
+                    <p className="text-[10px] uppercase text-muted-foreground">Year</p>
+                    <p className="text-foreground font-medium">{listing.year}</p>
+                  </div>
+                )}
+                {listing.model && (
+                  <div>
+                    <p className="text-[10px] uppercase text-muted-foreground">Model</p>
+                    <p className="text-foreground font-medium">{listing.model}</p>
+                  </div>
+                )}
+                {listing.color && (
+                  <div>
+                    <p className="text-[10px] uppercase text-muted-foreground">Color</p>
+                    <p className="text-foreground font-medium">{listing.color}</p>
+                  </div>
+                )}
+                {listing.upc && (
+                  <div>
+                    <p className="text-[10px] uppercase text-muted-foreground">UPC #</p>
+                    <p className="text-foreground font-medium font-mono">{listing.upc}</p>
+                  </div>
+                )}
+                {listing.expiration_date && (
+                  <div>
+                    <p className="text-[10px] uppercase text-muted-foreground">Expiration Date</p>
+                    <p className="text-foreground font-medium">{moment(listing.expiration_date).format('MMM D, YYYY')}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Description */}
           <div>
             <h3 className="font-display text-lg text-foreground mb-2">DESCRIPTION</h3>

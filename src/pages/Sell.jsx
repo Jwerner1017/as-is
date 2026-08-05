@@ -22,7 +22,8 @@ export default function Sell() {
     title: '', description: '', category: '', subcategory: '', condition: '',
     selling_format: 'Buy It Now', price: '', starting_bid: '', auction_end: '',
     shipping_type: 'Free Shipping', shipping_cost: '', is_replica: false,
-    weight: '', length: '', width: '', height: ''
+    weight: '', length: '', width: '', height: '',
+    year: '', model: '', upc: '', expiration_date: '', color: ''
   });
 
   useEffect(() => {
@@ -170,6 +171,36 @@ export default function Sell() {
                 {SELLING_FORMATS.map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}
               </SelectContent>
             </Select>
+          </div>
+        </div>
+
+        {/* Product Details */}
+        <div className="bg-card border border-border rounded-lg p-4 space-y-3">
+          <div>
+            <p className="text-xs uppercase tracking-wider font-bold text-foreground">Product Details</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">Optional — helps buyers find and verify your item</p>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            <div>
+              <Label className="text-[10px] uppercase text-muted-foreground">Year</Label>
+              <Input value={form.year} onChange={e => setForm(p => ({ ...p, year: e.target.value }))} placeholder="2020" className="mt-1 bg-muted border-border text-sm" />
+            </div>
+            <div>
+              <Label className="text-[10px] uppercase text-muted-foreground">Model</Label>
+              <Input value={form.model} onChange={e => setForm(p => ({ ...p, model: e.target.value }))} placeholder="Model X" className="mt-1 bg-muted border-border text-sm" />
+            </div>
+            <div>
+              <Label className="text-[10px] uppercase text-muted-foreground">Color</Label>
+              <Input value={form.color} onChange={e => setForm(p => ({ ...p, color: e.target.value }))} placeholder="Black" className="mt-1 bg-muted border-border text-sm" />
+            </div>
+            <div>
+              <Label className="text-[10px] uppercase text-muted-foreground">UPC #</Label>
+              <Input value={form.upc} onChange={e => setForm(p => ({ ...p, upc: e.target.value }))} placeholder="012345678905" className="mt-1 bg-muted border-border text-sm" />
+            </div>
+            <div>
+              <Label className="text-[10px] uppercase text-muted-foreground">Expiration Date</Label>
+              <Input type="date" value={form.expiration_date} onChange={e => setForm(p => ({ ...p, expiration_date: e.target.value }))} className="mt-1 bg-muted border-border text-sm" />
+            </div>
           </div>
         </div>
 
