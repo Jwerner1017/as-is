@@ -20,6 +20,9 @@ import Onboarding from '@/pages/Onboarding';
 import Settings from '@/pages/Settings';
 import About from '@/pages/About';
 import Contact from '@/pages/Contact';
+import Verification from '@/pages/Verification';
+import Inventory from '@/pages/Inventory';
+import Notifications from '@/pages/Notifications';
 import AppLayout from '@/components/layout/AppLayout';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import ConfirmedRoute, { LoginRedirect } from '@/components/ConfirmedRoute';
@@ -59,11 +62,14 @@ const AuthenticatedApp = () => {
         <Route path="/policies" element={<Policies />} />
         <Route element={<ProtectedRoute unauthenticatedElement={<LoginRedirect />} />}>
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/verification" element={<Verification />} />
+          <Route path="/notifications" element={<Notifications />} />
         </Route>
         <Route element={<ConfirmedRoute />}>
           <Route path="/sell" element={<Sell />} />
           <Route path="/live" element={<Live />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/inventory" element={<Inventory />} />
         </Route>
       </Route>
       <Route path="*" element={<PageNotFound />} />

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, Menu, X, Zap, User, ShoppingBag, Radio, ChevronDown } from 'lucide-react';
+import { Search, Menu, X, Zap, User, ShoppingBag, Radio, ChevronDown, Bell, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -55,6 +55,16 @@ export default function Navbar() {
                 Sell
               </Button>
             </Link>
+            <Link to="/notifications">
+              <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground relative">
+                <Bell className="w-5 h-5" />
+              </Button>
+            </Link>
+            <Link to="/inventory">
+              <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground hidden sm:flex">
+                <Package className="w-5 h-5" />
+              </Button>
+            </Link>
             <Link to="/dashboard">
               <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
                 <ShoppingBag className="w-5 h-5" />
@@ -89,6 +99,9 @@ export default function Navbar() {
                   </Link>
                   <Link to="/sell" className="text-primary font-bold py-2">Sell Something</Link>
                   <Link to="/dashboard" className="text-foreground font-medium py-2">Dashboard</Link>
+                  <Link to="/inventory" className="text-foreground font-medium py-2">Inventory Manager</Link>
+                  <Link to="/notifications" className="text-foreground font-medium py-2">Notifications</Link>
+                  <Link to="/verification" className="text-foreground font-medium py-2">Account Verification</Link>
                   <Link to="/policies" className="text-muted-foreground text-sm py-2">Policies</Link>
                   <Link to="/settings" className="text-muted-foreground text-sm py-2">Settings</Link>
                   <hr className="border-border" />
