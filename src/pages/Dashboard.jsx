@@ -354,7 +354,7 @@ export default function Dashboard() {
 
         {/* Personal Info */}
         <TabsContent value="personal">
-          <PersonalInfoTab user={user} onSaved={async () => { const u = await base44.auth.me(); setUser(u); await checkUserAuth(); }} />
+          <PersonalInfoTab user={user} sellerProfile={sellerProfile} onSaved={async () => { const u = await base44.auth.me(); setUser(u); await checkUserAuth(); }} onProfileSaved={reloadProfile} />
         </TabsContent>
       </Tabs>
 

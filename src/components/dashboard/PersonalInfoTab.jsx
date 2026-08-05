@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { User, MapPin, Phone, CreditCard, Loader2, Save, ShieldCheck } from 'lucide-react';
+import { User, MapPin, Phone, CreditCard, Loader2, Save, ShieldCheck, Package } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
+import ShipFromAddress from '@/components/shipping/ShipFromAddress';
 
-export default function PersonalInfoTab({ user, onSaved }) {
+export default function PersonalInfoTab({ user, sellerProfile, onSaved, onProfileSaved }) {
   const { toast } = useToast();
   const [form, setForm] = useState({
     phone: '',
@@ -161,6 +162,11 @@ export default function PersonalInfoTab({ user, onSaved }) {
           </div>
         </div>
       </div>
+
+      {/* Ship-From Address (Seller) */}
+      {sellerProfile && (
+        <ShipFromAddress sellerProfile={sellerProfile} onSaved={onProfileSaved || (() => {})} />
+      )}
 
       {/* Payment Info Note */}
       <div className="bg-card border border-border rounded-lg p-5">
