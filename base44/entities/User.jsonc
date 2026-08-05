@@ -7,6 +7,35 @@
         "admin",
         "user"
       ]
+    },
+    "phone": {
+      "type": "string",
+      "description": "Contact phone number"
+    },
+    "default_ship_name": {
+      "type": "string",
+      "description": "Default name for shipping address"
+    },
+    "default_ship_street1": {
+      "type": "string",
+      "description": "Default street address line 1"
+    },
+    "default_ship_street2": {
+      "type": "string",
+      "description": "Default street address line 2"
+    },
+    "default_ship_city": {
+      "type": "string"
+    },
+    "default_ship_state": {
+      "type": "string"
+    },
+    "default_ship_zip": {
+      "type": "string"
+    },
+    "default_ship_country": {
+      "type": "string",
+      "default": "US"
     }
   },
   "required": [

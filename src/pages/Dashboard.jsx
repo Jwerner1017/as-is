@@ -13,6 +13,7 @@ import PrintLabelDialog from '@/components/shipping/PrintLabelDialog';
 import ShipFromAddress from '@/components/shipping/ShipFromAddress';
 import ReviewDialog from '@/components/reviews/ReviewDialog';
 import PurchaseCard from '@/components/dashboard/PurchaseCard';
+import PersonalInfoTab from '@/components/dashboard/PersonalInfoTab';
 import { StarRating } from '@/components/reviews/StarRating';
 
 const LEVEL_COLORS = {
@@ -213,6 +214,7 @@ export default function Dashboard() {
           <TabsTrigger value="active">Active ({activeListings.length})</TabsTrigger>
           <TabsTrigger value="sold">Sold ({soldListings.length})</TabsTrigger>
           <TabsTrigger value="purchases">My Purchases ({purchases.length})</TabsTrigger>
+          <TabsTrigger value="personal">Personal Info</TabsTrigger>
         </TabsList>
 
         {/* Orders to Ship */}
@@ -319,6 +321,11 @@ export default function Dashboard() {
               onReview={setReviewOrder}
             />
           ))}
+        </TabsContent>
+
+        {/* Personal Info */}
+        <TabsContent value="personal">
+          <PersonalInfoTab user={user} onSaved={async () => { const u = await base44.auth.me(); setUser(u); }} />
         </TabsContent>
       </Tabs>
 
