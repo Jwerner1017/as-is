@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/components/ui/use-toast';
+import { useAuth } from '@/lib/AuthContext';
 import StripeOnboarding from '@/components/seller/StripeOnboarding';
 import PrintLabelDialog from '@/components/shipping/PrintLabelDialog';
 import ShipFromAddress from '@/components/shipping/ShipFromAddress';
@@ -36,6 +37,7 @@ export default function Dashboard() {
   const [selectedOrders, setSelectedOrders] = useState(new Set());
   const [bulkLoading, setBulkLoading] = useState(false);
   const { toast } = useToast();
+  const { checkUserAuth } = useAuth();
 
   useEffect(() => {
     async function load() {
@@ -325,7 +327,7 @@ export default function Dashboard() {
 
         {/* Personal Info */}
         <TabsContent value="personal">
-          <PersonalInfoTab user={user} onSaved={async () => { const u = await base44.auth.me(); setUser(u); }} />
+          <PersonalInfoTab user={user} onSaved={async () => { const u = await base44.auth.me(); setUser(u); await checkUserAuth(); }} />
         </TabsContent>
       </Tabs>
 

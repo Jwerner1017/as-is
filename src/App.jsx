@@ -21,6 +21,8 @@ import Settings from '@/pages/Settings';
 import About from '@/pages/About';
 import Contact from '@/pages/Contact';
 import AppLayout from '@/components/layout/AppLayout';
+import ProtectedRoute from '@/components/ProtectedRoute';
+import ConfirmedRoute, { LoginRedirect } from '@/components/ConfirmedRoute';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -52,13 +54,17 @@ const AuthenticatedApp = () => {
         <Route path="/" element={<Home />} />
         <Route path="/browse" element={<Browse />} />
         <Route path="/listing/:id" element={<ListingDetail />} />
-        <Route path="/sell" element={<Sell />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/live" element={<Live />} />
-        <Route path="/policies" element={<Policies />} />
-        <Route path="/settings" element={<Settings />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/policies" element={<Policies />} />
+        <Route element={<ProtectedRoute unauthenticatedElement={<LoginRedirect />} />}>
+          <Route path="/dashboard" element={<Dashboard />} />
+        </Route>
+        <Route element={<ConfirmedRoute />}>
+          <Route path="/sell" element={<Sell />} />
+          <Route path="/live" element={<Live />} />
+          <Route path="/settings" element={<Settings />} />
+        </Route>
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
