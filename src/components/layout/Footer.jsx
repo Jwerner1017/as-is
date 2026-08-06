@@ -8,7 +8,7 @@ export default function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           <div>
             <h4 className="font-display text-xl text-primary mb-1">AS IS</h4>
-            <p className="font-body text-[10px] tracking-[0.3em] text-muted-foreground uppercase mb-4">Raw Deals</p>
+            <p className="font-body text-[10px] italic text-muted-foreground mb-4">Raw Deals</p>
             <p className="text-xs text-muted-foreground leading-relaxed">
               What you see is what you get.<br />No refunds. No crying.
             </p>
