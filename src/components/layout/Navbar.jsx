@@ -24,8 +24,9 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 shrink-0">
+          <Link to="/" className="flex flex-col shrink-0 leading-none">
             <span className="font-display text-3xl tracking-wider text-primary">AS IS</span>
+            <span className="font-body text-[9px] tracking-[0.35em] text-muted-foreground uppercase -mt-0.5">Raw Deals</span>
           </Link>
 
           {/* Search - desktop */}

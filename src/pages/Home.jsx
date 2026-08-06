@@ -45,6 +45,7 @@ export default function Home() {
             <h1 className="font-display text-6xl md:text-8xl lg:text-9xl text-foreground tracking-wider">
               AS <span className="text-primary">IS</span>
             </h1>
+            <p className="font-body text-sm md:text-base tracking-[0.4em] text-muted-foreground uppercase mt-1">Raw Deals</p>
             <p className="text-lg md:text-xl text-muted-foreground mt-4 max-w-xl mx-auto font-medium">
               What you see is what you get. No refunds. No crying.
             </p>
