@@ -282,13 +282,24 @@ export default function ListingDetail() {
 
           {/* Seller info */}
           <div className="bg-card border border-border rounded-lg p-4">
-            <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Seller</p>
-            <p className="font-medium text-foreground">{listing.seller_name || 'Unknown Seller'}</p>
-            {sellerProfile?.review_count > 0 && (
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs text-muted-foreground uppercase tracking-wider">Seller</p>
+              {sellerProfile?.seller_level && (
+                <Badge variant="outline" className="text-[10px] border-primary/40 text-primary">{sellerProfile.seller_level}</Badge>
+              )}
+            </div>
+            <p className="font-medium text-foreground text-lg">{listing.seller_name || 'Unknown Seller'}</p>
+            {sellerProfile?.review_count > 0 ? (
               <div className="flex items-center gap-2 mt-2">
-                <StarRating rating={sellerProfile.rating || 0} size="sm" />
-                <span className="text-sm font-bold text-foreground">{(sellerProfile.rating || 0).toFixed(1)}</span>
-                <span className="text-xs text-muted-foreground">({sellerProfile.review_count} review{sellerProfile.review_count === 1 ? '' : 's'})</span>
+                <StarRating rating={sellerProfile.rating || 0} size="md" />
+                <span className="text-xl font-bold text-foreground">{(sellerProfile.rating || 0).toFixed(1)}</span>
+                <span className="text-sm text-muted-foreground">·</span>
+                <span className="text-sm text-muted-foreground font-medium">{sellerProfile.review_count} review{sellerProfile.review_count === 1 ? '' : 's'}</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 mt-2">
+                <StarRating rating={0} size="md" />
+                <span className="text-sm text-muted-foreground italic">New seller — no reviews yet</span>
               </div>
             )}
           </div>
