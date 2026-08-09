@@ -6,6 +6,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { useToast } from '@/components/ui/use-toast';
 
 export default function Inventory() {
@@ -16,6 +27,7 @@ export default function Inventory() {
   const [priceMode, setPriceMode] = useState(null); // null | 'percent' | 'fixed'
   const [priceValue, setPriceValue] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState(false);
 
   useEffect(() => {
     loadListings();
@@ -98,6 +110,23 @@ export default function Inventory() {
     }
   };
 
+  const handleBulkDelete = async () => {
+    setActionLoading(true);
+    try {
+      for (const id of selected) {
+        await base44.entities.Listing.delete(id);
+      }
+      await loadListings();
+      setSelected(new Set());
+      setDeleteConfirm(false);
+      toast({ title: "Deleted", description: `${selected.size} listing${selected.size === 1 ? '' : 's'} permanently deleted.` });
+    } catch (e) {
+      toast({ title: "Error", description: e.response?.data?.error || e.message, variant: "destructive" });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="max-w-6xl mx-auto px-4 py-8">
@@ -166,6 +195,28 @@ export default function Inventory() {
                   {actionLoading ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Trash2 className="w-3 h-3 mr-1" />}
                   Delist
                 </Button>
+                <AlertDialog open={deleteConfirm} onOpenChange={setDeleteConfirm}>
+                  <AlertDialogTrigger asChild>
+                    <Button disabled={actionLoading} variant="destructive" size="sm" className="text-xs uppercase font-bold bg-red-700 hover:bg-red-800">
+                      <Trash2 className="w-3 h-3 mr-1" />
+                      Delete
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete {selected.size} listing{selected.size === 1 ? '' : 's'}?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This permanently removes the selected listing{selected.size === 1 ? '' : 's'} from your inventory. This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleBulkDelete} className="bg-red-700 hover:bg-red-800 text-white">
+                        Delete Permanently
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             </div>
           )}
