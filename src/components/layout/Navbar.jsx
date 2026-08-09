@@ -26,7 +26,7 @@ export default function Navbar() {
           {/* Logo */}
           <Link to="/" className="flex flex-col shrink-0 leading-none">
             <span className="font-display text-3xl tracking-wider text-primary">AS IS</span>
-            <span className="text-[9px] italic text-muted-foreground -mt-0.5 text-center no-underline font-bold [font-family:'Permanent_Marker',_system-ui]">      Raw Deals</span>
+            <span className="italic text-muted-foreground -mt-0.5 text-center no-underline font-bold [font-family:'Merriweather',_serif] text-xs">      Raw Deals</span>
           </Link>
 
           {/* Search - desktop */}
