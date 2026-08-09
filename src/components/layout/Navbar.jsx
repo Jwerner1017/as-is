@@ -26,7 +26,7 @@ export default function Navbar() {
           {/* Logo */}
           <Link to="/" className="flex flex-col shrink-0 leading-none">
             <span className="font-display text-3xl tracking-wider text-primary">AS IS</span>
-            <span className="font-body text-[9px] italic text-muted-foreground -mt-0.5">Raw Deals</span>
+            <span className="font-body text-[9px] italic text-muted-foreground -mt-0.5 text-center underline">      Raw Deals</span>
           </Link>
 
           {/* Search - desktop */}
@@ -37,8 +37,8 @@ export default function Navbar() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search for anything..."
-                className="pl-10 bg-muted border-border focus:border-primary h-10"
-              />
+                className="pl-10 bg-muted border-border focus:border-primary h-10" />
+              
             </div>
           </form>
 
@@ -91,8 +91,8 @@ export default function Navbar() {
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder="Search..."
-                      className="bg-muted border-border"
-                    />
+                      className="bg-muted border-border" />
+                    
                   </form>
                   <Link to="/browse" className="text-foreground font-medium py-2">Browse All</Link>
                   <Link to="/live" className="text-red-500 font-bold py-2 flex items-center gap-2">
@@ -107,11 +107,11 @@ export default function Navbar() {
                   <Link to="/settings" className="text-muted-foreground text-sm py-2">Settings</Link>
                   <hr className="border-border" />
                   <p className="text-xs text-muted-foreground font-bold uppercase tracking-wider">Categories</p>
-                  {CATEGORIES.map(cat => (
-                    <Link key={cat.name} to={`/browse?category=${encodeURIComponent(cat.name)}`} className="text-sm text-muted-foreground hover:text-foreground py-1">
+                  {CATEGORIES.map((cat) =>
+                  <Link key={cat.name} to={`/browse?category=${encodeURIComponent(cat.name)}`} className="text-sm text-muted-foreground hover:text-foreground py-1">
                       {cat.name}
                     </Link>
-                  ))}
+                  )}
                 </div>
               </SheetContent>
             </Sheet>
@@ -128,16 +128,16 @@ export default function Navbar() {
                 All
               </Button>
             </Link>
-            {CATEGORIES.map(cat => (
-              <Link key={cat.name} to={`/browse?category=${encodeURIComponent(cat.name)}`}>
+            {CATEGORIES.map((cat) =>
+            <Link key={cat.name} to={`/browse?category=${encodeURIComponent(cat.name)}`}>
                 <Button variant="ghost" size="sm" className="text-xs text-muted-foreground hover:text-foreground whitespace-nowrap h-7">
                   {cat.name}
                 </Button>
               </Link>
-            ))}
+            )}
           </div>
         </div>
       </div>
-    </nav>
-  );
+    </nav>);
+
 }
