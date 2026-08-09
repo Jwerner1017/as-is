@@ -1,0 +1,40 @@
+{
+  "name": "Listing Calendar Event Creator",
+  "description": "Creates a Google Calendar event when an auction listing is created, marking its auction end date for automated expiration",
+  "trigger": {
+    "config": {
+      "trigger_type": "entity",
+      "entity_name": "Listing",
+      "events": [
+        "create"
+      ]
+    },
+    "condition": "${ .trigger.data.auction_end != null }"
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "listing_calendar_event_creator",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "create_event": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "create-listing-calendar-event",
+            "args": {
+              "listing_id": "${ .trigger.entity_id }"
+            }
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Create calendar event",
+            "description": "Google Calendar event at auction end"
+          }
+        }
+      }
+    ]
+  }
+}

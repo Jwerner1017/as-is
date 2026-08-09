@@ -1,0 +1,45 @@
+{
+  "name": "Calendar Listing Expiration",
+  "description": "Hourly sync of Google Calendar events \u2014 expires listings whose auction end date has passed",
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 * * * *",
+      "one_time_date": null,
+      "timezone": "UTC",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "calendar_listing_expiration",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "sync_expirations": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "sync-calendar-expirations",
+            "args": {}
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Sync & expire listings",
+            "description": "Check past calendar events"
+          }
+        }
+      }
+    ]
+  }
+}
