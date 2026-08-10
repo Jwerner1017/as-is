@@ -75,7 +75,7 @@ Deno.serve(async (req) => {
     const origin = new URL(req.url).origin;
 
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
+      payment_method_types: ['card', 'paypal'],
       line_items: [
         {
           price_data: {
