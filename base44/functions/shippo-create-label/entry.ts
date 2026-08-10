@@ -65,6 +65,20 @@ Deno.serve(async (req) => {
       console.error('Failed to send shipping email:', emailError);
     }
 
+    // Create in-app notification for buyer
+    try {
+      await base44.asServiceRole.entities.Notification.create({
+        user_id: order.buyer_id || '',
+        type: 'shipping_update',
+        title: 'Your order has shipped!',
+        message: `"${order.listing_title}" is on the way. Tracking: ${trackingNumber} (${carrier || 'N/A'}).`,
+        link: '/dashboard',
+        related_id: order_id,
+      });
+    } catch (notifError) {
+      console.error('Failed to create shipping notification:', notifError);
+    }
+
     return Response.json({ label_url: labelUrl, tracking_number: trackingNumber, carrier: carrier });
   } catch (error) {
     console.error('Shippo create label error:', error);

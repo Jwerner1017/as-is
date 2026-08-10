@@ -156,6 +156,20 @@ Deno.serve(async (req) => {
           console.error('Failed to send shipping email:', emailError);
         }
 
+        // Create in-app notification for buyer
+        try {
+          await base44.asServiceRole.entities.Notification.create({
+            user_id: order.buyer_id || '',
+            type: 'shipping_update',
+            title: 'Your order has shipped!',
+            message: `"${order.listing_title}" is on the way. Tracking: ${labelData.tracking_number} (${labelData.carrier || 'N/A'}).`,
+            link: '/dashboard',
+            related_id: orderId,
+          });
+        } catch (notifError) {
+          console.error('Failed to create shipping notification:', notifError);
+        }
+
         results.push({
           order_id: orderId,
           success: true,

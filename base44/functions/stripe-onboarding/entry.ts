@@ -20,7 +20,11 @@ Deno.serve(async (req) => {
     if (!profile.stripe_account_id) {
       const account = await stripe.accounts.create({
         type: 'express',
-        metadata: { user_id: user.id, seller_profile_id: profile.id },
+        metadata: {
+          user_id: user.id,
+          seller_profile_id: profile.id,
+          base44_app_id: Deno.env.get('BASE44_APP_ID'),
+        },
       });
       profile = await base44.entities.SellerProfile.update(profile.id, {
         stripe_account_id: account.id,
