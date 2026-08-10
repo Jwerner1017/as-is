@@ -23,6 +23,7 @@ import Contact from '@/pages/Contact';
 import Verification from '@/pages/Verification';
 import Inventory from '@/pages/Inventory';
 import Notifications from '@/pages/Notifications';
+import BulletinBoard from '@/pages/BulletinBoard';
 import AppLayout from '@/components/layout/AppLayout';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import ConfirmedRoute, { LoginRedirect } from '@/components/ConfirmedRoute';
@@ -68,6 +69,7 @@ const AuthenticatedApp = () => {
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/policies" element={<Policies />} />
+        <Route path="/bulletin" element={<BulletinBoard />} />
         <Route element={<ProtectedRoute unauthenticatedElement={<LoginRedirect />} />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/verification" element={<Verification />} />

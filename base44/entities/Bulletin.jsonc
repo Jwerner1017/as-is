@@ -1,0 +1,56 @@
+{
+  "name": "Bulletin",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "content": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "update",
+        "announcement",
+        "maintenance",
+        "new_feature"
+      ],
+      "default": "update"
+    },
+    "date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "pinned": {
+      "type": "boolean",
+      "default": false
+    },
+    "author": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "title",
+    "content",
+    "type"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": null,
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

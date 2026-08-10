@@ -19,6 +19,7 @@ export default function Footer() {
               <Link to="/browse" className="text-xs text-muted-foreground hover:text-foreground">Browse</Link>
               <Link to="/live" className="text-xs text-muted-foreground hover:text-foreground">Live Streams</Link>
               <Link to="/sell" className="text-xs text-muted-foreground hover:text-foreground">Sell Something</Link>
+              <Link to="/bulletin" className="text-xs text-muted-foreground hover:text-foreground">Bulletin Board</Link>
             </div>
           </div>
           <div>

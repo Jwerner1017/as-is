@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, Menu, X, Zap, User, ShoppingBag, Radio, ChevronDown, Bell, Package } from 'lucide-react';
+import { Search, Menu, X, Zap, User, ShoppingBag, Radio, ChevronDown, Bell, Package, Megaphone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -61,6 +61,11 @@ export default function Navbar() {
                 <Bell className="w-5 h-5" />
               </Button>
             </Link>
+            <Link to="/bulletin">
+              <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground hidden sm:flex" title="Bulletin Board">
+                <Megaphone className="w-5 h-5" />
+              </Button>
+            </Link>
             <Link to="/inventory">
               <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground hidden sm:flex">
                 <Package className="w-5 h-5" />
@@ -102,6 +107,9 @@ export default function Navbar() {
                   <Link to="/dashboard" className="text-foreground font-medium py-2">Dashboard</Link>
                   <Link to="/inventory" className="text-foreground font-medium py-2">Inventory Manager</Link>
                   <Link to="/notifications" className="text-foreground font-medium py-2">Notifications</Link>
+                  <Link to="/bulletin" className="text-foreground font-medium py-2 flex items-center gap-2">
+                    <Megaphone className="w-4 h-4" /> Bulletin Board
+                  </Link>
                   <Link to="/verification" className="text-foreground font-medium py-2">Account Verification</Link>
                   <Link to="/policies" className="text-muted-foreground text-sm py-2">Policies</Link>
                   <Link to="/settings" className="text-muted-foreground text-sm py-2">Settings</Link>
