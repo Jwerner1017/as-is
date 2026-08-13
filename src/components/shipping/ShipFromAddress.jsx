@@ -37,32 +37,32 @@ export default function ShipFromAddress({ sellerProfile, onSaved }) {
         <p className="font-display text-lg text-foreground">SHIP-FROM ADDRESS</p>
       </div>
       <p className="text-xs text-muted-foreground mb-3">Required for calculated shipping labels. Set this once.</p>
-      <div className="grid grid-cols-2 gap-2">
-        <div className="col-span-2">
-          <Label className="text-[10px] uppercase text-muted-foreground">Name / Business</Label>
-          <Input value={form.ship_from_name} onChange={e => setForm(p => ({ ...p, ship_from_name: e.target.value }))} className="mt-1 bg-muted border-border text-sm" />
-        </div>
-        <div className="col-span-2">
-          <Label className="text-[10px] uppercase text-muted-foreground">Street Address</Label>
-          <Input value={form.ship_from_street1} onChange={e => setForm(p => ({ ...p, ship_from_street1: e.target.value }))} className="mt-1 bg-muted border-border text-sm" />
+      <div className="space-y-2">
+        <div>
+          <Label htmlFor="from-name" className="text-[10px] uppercase text-muted-foreground">Name / Business</Label>
+          <Input id="from-name" placeholder="Your name or business" value={form.ship_from_name} onChange={e => setForm(p => ({ ...p, ship_from_name: e.target.value }))} className="mt-1 bg-muted border-border text-sm" />
         </div>
         <div>
-          <Label className="text-[10px] uppercase text-muted-foreground">City</Label>
-          <Input value={form.ship_from_city} onChange={e => setForm(p => ({ ...p, ship_from_city: e.target.value }))} className="mt-1 bg-muted border-border text-sm" />
+          <Label htmlFor="from-street" className="text-[10px] uppercase text-muted-foreground">Street Address</Label>
+          <Input id="from-street" placeholder="123 Main Street" value={form.ship_from_street1} onChange={e => setForm(p => ({ ...p, ship_from_street1: e.target.value }))} className="mt-1 bg-muted border-border text-sm" />
         </div>
-        <div>
-          <Label className="text-[10px] uppercase text-muted-foreground">State</Label>
-          <Input value={form.ship_from_state} onChange={e => setForm(p => ({ ...p, ship_from_state: e.target.value.toUpperCase() }))} maxLength={2} className="mt-1 bg-muted border-border text-sm uppercase" />
+        <div className="grid grid-cols-3 gap-2">
+          <div>
+            <Label htmlFor="from-city" className="text-[10px] uppercase text-muted-foreground">City</Label>
+            <Input id="from-city" placeholder="Los Angeles" value={form.ship_from_city} onChange={e => setForm(p => ({ ...p, ship_from_city: e.target.value }))} className="mt-1 bg-muted border-border text-sm" />
+          </div>
+          <div>
+            <Label htmlFor="from-state" className="text-[10px] uppercase text-muted-foreground">State</Label>
+            <Input id="from-state" placeholder="CA" value={form.ship_from_state} onChange={e => setForm(p => ({ ...p, ship_from_state: e.target.value.toUpperCase() }))} maxLength={2} className="mt-1 bg-muted border-border text-sm uppercase" />
+          </div>
+          <div>
+            <Label htmlFor="from-zip" className="text-[10px] uppercase text-muted-foreground">ZIP Code</Label>
+            <Input id="from-zip" inputMode="numeric" placeholder="90001" value={form.ship_from_zip} onChange={e => setForm(p => ({ ...p, ship_from_zip: e.target.value }))} className="mt-1 bg-muted border-border text-sm" />
+          </div>
         </div>
-        <div>
-          <Label className="text-[10px] uppercase text-muted-foreground">ZIP Code</Label>
-          <Input value={form.ship_from_zip} onChange={e => setForm(p => ({ ...p, ship_from_zip: e.target.value }))} className="mt-1 bg-muted border-border text-sm" />
-        </div>
-        <div className="flex items-end">
-          <Button onClick={handleSave} disabled={saving} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground text-xs uppercase tracking-wider">
-            {saving ? 'Saving...' : 'Save Address'}
-          </Button>
-        </div>
+        <Button onClick={handleSave} disabled={saving} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground text-xs uppercase tracking-wider">
+          {saving ? 'Saving...' : 'Save Address'}
+        </Button>
       </div>
     </div>
   );

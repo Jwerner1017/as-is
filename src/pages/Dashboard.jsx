@@ -227,7 +227,7 @@ export default function Dashboard() {
 
       <StripeOnboarding sellerProfile={sellerProfile} />
 
-      {sellerProfile?.onboarded && !sellerProfile?.ship_from_street1 && (
+      {sellerProfile && !sellerProfile?.ship_from_street1 && (
         <ShipFromAddress sellerProfile={sellerProfile} onSaved={reloadProfile} />
       )}
 
