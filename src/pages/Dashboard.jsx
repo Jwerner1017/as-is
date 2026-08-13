@@ -38,7 +38,7 @@ export default function Dashboard() {
   const [selectedOrders, setSelectedOrders] = useState(new Set());
   const [bulkLoading, setBulkLoading] = useState(false);
   const { toast } = useToast();
-  const { checkUserAuth } = useAuth();
+  const { refreshUser } = useAuth();
 
   useEffect(() => {
     async function load() {
@@ -354,7 +354,7 @@ export default function Dashboard() {
 
         {/* Personal Info */}
         <TabsContent value="personal">
-          <PersonalInfoTab user={user} sellerProfile={sellerProfile} onSaved={async () => { const u = await base44.auth.me(); setUser(u); await checkUserAuth(); }} onProfileSaved={reloadProfile} />
+          <PersonalInfoTab user={user} sellerProfile={sellerProfile} onSaved={async () => { await refreshUser(); const u = await base44.auth.me(); setUser(u); }} onProfileSaved={reloadProfile} />
         </TabsContent>
       </Tabs>
 

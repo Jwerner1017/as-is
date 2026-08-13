@@ -127,6 +127,16 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const refreshUser = async () => {
+    try {
+      const currentUser = await base44.auth.me();
+      setUser(currentUser);
+      setIsAuthenticated(true);
+    } catch (error) {
+      console.error('User refresh failed:', error);
+    }
+  };
+
   const navigateToLogin = () => {
     // Use the SDK's redirectToLogin method
     base44.auth.redirectToLogin(window.location.href);
@@ -144,6 +154,7 @@ export const AuthProvider = ({ children }) => {
       logout,
       navigateToLogin,
       checkUserAuth,
+      refreshUser,
       checkAppState
     }}>
       {children}

@@ -1,7 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Outlet, Link } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
-import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { MapPin } from 'lucide-react';
 
@@ -16,30 +15,9 @@ export function LoginRedirect() {
 }
 
 export default function ConfirmedRoute() {
-  const { isAuthenticated, isLoadingAuth, authChecked, authError } = useAuth();
-  const [checking, setChecking] = useState(true);
-  const [confirmed, setConfirmed] = useState(false);
+  const { user, isAuthenticated, isLoadingAuth, authChecked, authError } = useAuth();
 
-  useEffect(() => {
-    async function check() {
-      if (authChecked && !isLoadingAuth) {
-        if (!isAuthenticated || authError) {
-          setChecking(false);
-          return;
-        }
-        try {
-          const u = await base44.auth.me();
-          setConfirmed(!!u?.default_ship_street1);
-        } catch {
-          setConfirmed(false);
-        }
-        setChecking(false);
-      }
-    }
-    check();
-  }, [authChecked, isLoadingAuth, isAuthenticated, authError]);
-
-  if (isLoadingAuth || !authChecked || checking) {
+  if (isLoadingAuth || !authChecked) {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-background">
         <div className="w-8 h-8 border-4 border-muted border-t-primary rounded-full animate-spin"></div>
@@ -51,7 +29,7 @@ export default function ConfirmedRoute() {
     return <LoginRedirect />;
   }
 
-  if (!confirmed) {
+  if (!user?.default_ship_street1) {
     return (
       <div className="max-w-md mx-auto px-4 py-20 text-center">
         <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
