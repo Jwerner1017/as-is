@@ -51,32 +51,32 @@ export default function ShippingAddressForm({ listing, onRateSelected }) {
         <Truck className="w-4 h-4 text-primary" />
         <p className="text-xs uppercase tracking-wider font-bold">Calculated Shipping — Enter Your Address</p>
       </div>
-      <div className="grid grid-cols-2 gap-2">
-        <div className="col-span-2">
-          <Label className="text-[10px] uppercase text-muted-foreground">Full Name</Label>
-          <Input value={address.name} onChange={e => setAddress(p => ({ ...p, name: e.target.value }))} className="mt-1 bg-muted border-border text-sm" />
-        </div>
-        <div className="col-span-2">
-          <Label className="text-[10px] uppercase text-muted-foreground">Street Address</Label>
-          <Input value={address.street1} onChange={e => setAddress(p => ({ ...p, street1: e.target.value }))} className="mt-1 bg-muted border-border text-sm" />
+      <div className="space-y-2">
+        <div>
+          <Label htmlFor="ship-name" className="text-[10px] uppercase text-muted-foreground">Full Name</Label>
+          <Input id="ship-name" autoComplete="name" placeholder="John Smith" value={address.name} onChange={e => setAddress(p => ({ ...p, name: e.target.value }))} className="mt-1 bg-muted border-border text-sm" />
         </div>
         <div>
-          <Label className="text-[10px] uppercase text-muted-foreground">City</Label>
-          <Input value={address.city} onChange={e => setAddress(p => ({ ...p, city: e.target.value }))} className="mt-1 bg-muted border-border text-sm" />
+          <Label htmlFor="ship-street" className="text-[10px] uppercase text-muted-foreground">Street Address</Label>
+          <Input id="ship-street" autoComplete="street-address" placeholder="123 Main Street" value={address.street1} onChange={e => setAddress(p => ({ ...p, street1: e.target.value }))} className="mt-1 bg-muted border-border text-sm" />
         </div>
-        <div>
-          <Label className="text-[10px] uppercase text-muted-foreground">State</Label>
-          <Input value={address.state} onChange={e => setAddress(p => ({ ...p, state: e.target.value.toUpperCase() }))} maxLength={2} className="mt-1 bg-muted border-border text-sm uppercase" />
+        <div className="grid grid-cols-3 gap-2">
+          <div>
+            <Label htmlFor="ship-city" className="text-[10px] uppercase text-muted-foreground">City</Label>
+            <Input id="ship-city" autoComplete="address-level2" placeholder="Los Angeles" value={address.city} onChange={e => setAddress(p => ({ ...p, city: e.target.value }))} className="mt-1 bg-muted border-border text-sm" />
+          </div>
+          <div>
+            <Label htmlFor="ship-state" className="text-[10px] uppercase text-muted-foreground">State</Label>
+            <Input id="ship-state" autoComplete="address-level1" placeholder="CA" value={address.state} onChange={e => setAddress(p => ({ ...p, state: e.target.value.toUpperCase() }))} maxLength={2} className="mt-1 bg-muted border-border text-sm uppercase" />
+          </div>
+          <div>
+            <Label htmlFor="ship-zip" className="text-[10px] uppercase text-muted-foreground">ZIP Code</Label>
+            <Input id="ship-zip" autoComplete="postal-code" inputMode="numeric" placeholder="90001" value={address.zip} onChange={e => setAddress(p => ({ ...p, zip: e.target.value }))} className="mt-1 bg-muted border-border text-sm" />
+          </div>
         </div>
-        <div>
-          <Label className="text-[10px] uppercase text-muted-foreground">ZIP Code</Label>
-          <Input value={address.zip} onChange={e => setAddress(p => ({ ...p, zip: e.target.value }))} className="mt-1 bg-muted border-border text-sm" />
-        </div>
-        <div className="flex items-end">
-          <Button onClick={handleGetRates} disabled={loading} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground text-xs uppercase tracking-wider">
-            {loading ? <><Loader2 className="w-3 h-3 mr-1 animate-spin" /> Getting Rates</> : 'Get Rates'}
-          </Button>
-        </div>
+        <Button onClick={handleGetRates} disabled={loading} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground text-xs uppercase tracking-wider">
+          {loading ? <><Loader2 className="w-3 h-3 mr-1 animate-spin" /> Getting Rates</> : 'Get Rates'}
+        </Button>
       </div>
       {error && <p className="text-xs text-destructive">{error}</p>}
       {rates.length > 0 && (
