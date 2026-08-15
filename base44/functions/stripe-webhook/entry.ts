@@ -1,12 +1,12 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 import Stripe from 'npm:stripe@17.4.0';
 
-async function fulfillOrder(base44: any, session: any) {
+async function fulfillOrder(base44: any, session: any, stripe: any) {
   const m = session.metadata || {};
 
-  // Idempotency: skip if order already exists for this checkout session
+  // Idempotency: skip if order already exists for this Stripe checkout session
   const existingBySession = await base44.asServiceRole.entities.Order.filter({
-    listing_id: m.listing_id
+    stripe_session_id: session.id
   });
   if (existingBySession.length > 0) {
     return; // Already fulfilled
@@ -15,6 +15,21 @@ async function fulfillOrder(base44: any, session: any) {
   const listing = await base44.asServiceRole.entities.Listing.get(m.listing_id);
   if (!listing) {
     console.error('Stripe webhook: listing not found:', m.listing_id);
+    return;
+  }
+
+  // If the listing was already sold to a different buyer (race condition),
+  // refund this duplicate payment rather than creating a second order.
+  if (listing.status === 'sold' && listing.buyer_id !== m.buyer_id) {
+    console.warn('Stripe webhook: listing already sold to another buyer, refunding session:', session.id);
+    try {
+      await stripe.refunds.create({
+        payment_intent: session.payment_intent,
+        reason: 'duplicate',
+      });
+    } catch (refundError) {
+      console.error('Failed to refund duplicate payment:', refundError);
+    }
     return;
   }
 
@@ -34,6 +49,7 @@ async function fulfillOrder(base44: any, session: any) {
     shipping_cost: parseFloat(m.shipping_cost) || 0,
     shipping_rate_id: m.shipping_rate_id || '',
     carrier: m.carrier || '',
+    stripe_session_id: session.id,
     ship_to_name: m.ship_to_name || '',
     ship_to_street1: m.ship_to_street1 || '',
     ship_to_city: m.ship_to_city || '',
@@ -107,24 +123,37 @@ Deno.serve(async (req) => {
       // For async payment methods (PayPal), only fulfill if already paid.
       // Otherwise wait for async_payment_succeeded event.
       if (session.payment_status === 'paid') {
-        await fulfillOrder(base44, session);
+        await fulfillOrder(base44, session, stripe);
       }
     }
 
     if (event.type === 'checkout.session.async_payment_succeeded') {
       const session = event.data.object;
-      await fulfillOrder(base44, session);
+      await fulfillOrder(base44, session, stripe);
     }
 
     if (event.type === 'checkout.session.async_payment_failed') {
-      // Payment failed (e.g. PayPal declined) — restore the listing so it can be sold again
+      // Payment failed (e.g. PayPal declined) — release the reservation so it can be sold again
       const session = event.data.object;
       const m = session.metadata || {};
       if (m.listing_id) {
         const listing = await base44.asServiceRole.entities.Listing.get(m.listing_id);
-        if (listing && listing.status === 'sold') {
+        if (listing && listing.status !== 'sold') {
           await base44.asServiceRole.entities.Listing.update(m.listing_id, {
-            status: 'active',
+            buyer_id: '',
+          });
+        }
+      }
+    }
+
+    if (event.type === 'checkout.session.expired') {
+      // Session expired without payment — release the reservation
+      const session = event.data.object;
+      const m = session.metadata || {};
+      if (m.listing_id) {
+        const listing = await base44.asServiceRole.entities.Listing.get(m.listing_id);
+        if (listing && listing.status !== 'sold') {
+          await base44.asServiceRole.entities.Listing.update(m.listing_id, {
             buyer_id: '',
           });
         }

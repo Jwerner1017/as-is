@@ -20,17 +20,58 @@ Deno.serve(async (req) => {
     const listing = await base44.asServiceRole.entities.Listing.get(listing_id);
     if (!listing) return Response.json({ error: 'Listing not found' }, { status: 404 });
     if (listing.status === 'sold') return Response.json({ error: 'Listing already sold' }, { status: 400 });
+    if (listing.status === 'ended') return Response.json({ error: 'Listing has ended' }, { status: 400 });
 
-    const isAuction = listing.selling_format === 'Auction';
-    const displayPrice = isAuction ? (listing.current_bid || listing.starting_bid || 0) : listing.price;
+    // Prevent sellers from buying their own listings
+    if (listing.seller_id === buyer_id) {
+      return Response.json({ error: 'You cannot buy your own listing' }, { status: 400 });
+    }
+
+    // Validate purchase_type against the listing's selling_format
+    const isBuyNow = listing.selling_format === 'Buy It Now';
+    const isAuctionOrLive = listing.selling_format === 'Auction' || listing.selling_format === 'Live';
+    const displayPrice = isAuctionOrLive ? (listing.current_bid || listing.starting_bid || 0) : listing.price;
 
     let finalPrice = 0;
-    if (purchase_type === 'buy_now') finalPrice = listing.price;
-    else if (purchase_type === 'rage_buy') finalPrice = displayPrice * 1.20;
-    else if (purchase_type === 'all_mine') finalPrice = displayPrice * 1.25;
-    else finalPrice = displayPrice;
+    if (isBuyNow) {
+      if (purchase_type !== 'buy_now') {
+        return Response.json({ error: 'This listing can only be purchased via Buy It Now' }, { status: 400 });
+      }
+      finalPrice = listing.price;
+    } else if (isAuctionOrLive) {
+      if (purchase_type === 'rage_buy') {
+        // Rage Buy eligibility: 15+ bids OR manually triggered by seller
+        const rageEligible = (listing.bid_count >= 15) || listing.rage_buy_triggered_manually;
+        if (!rageEligible) {
+          return Response.json({ error: 'Rage Buy is not available for this listing' }, { status: 400 });
+        }
+        finalPrice = displayPrice * 1.20;
+      } else if (purchase_type === 'all_mine') {
+        // All Mine eligibility: must be active and not expired
+        const allMineExpired = listing.all_mine_expires && new Date(listing.all_mine_expires) <= new Date();
+        if (!listing.all_mine_active || allMineExpired) {
+          return Response.json({ error: 'All Mine is not available for this listing' }, { status: 400 });
+        }
+        finalPrice = displayPrice * 1.25;
+      } else {
+        return Response.json({ error: 'Auction listings can only be purchased via Rage Buy or All Mine' }, { status: 400 });
+      }
+    } else {
+      return Response.json({ error: 'Unknown selling format' }, { status: 400 });
+    }
 
     finalPrice = Math.round(finalPrice * 100) / 100;
+
+    // Atomically reserve the listing — only succeeds if buyer_id is not already
+    // claimed by another buyer. This prevents concurrent checkout sessions.
+    await base44.asServiceRole.entities.Listing.updateMany(
+      { id: listing_id, buyer_id: { $in: [null, ""] } },
+      { $set: { buyer_id: buyer_id } }
+    );
+    const reservedListing = await base44.asServiceRole.entities.Listing.get(listing_id);
+    if (reservedListing.buyer_id !== buyer_id) {
+      return Response.json({ error: 'Listing is being purchased by another buyer. Please try again.' }, { status: 409 });
+    }
 
     // Validate shipping cost server-side — never trust client-supplied shipping_cost
     let validatedShippingCost = 0;
