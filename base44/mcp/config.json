@@ -1,0 +1,201 @@
+{
+  "auth": "oauth",
+  "tools": {
+    "functions": [
+      {
+        "name": "create_checkout_session",
+        "title": "Create Checkout Session",
+        "description": "Starts a Stripe checkout session so a buyer can purchase a listing. Returns a checkout URL the buyer must open to pay. Use when a user wants to buy an item. The purchase_type must match the listing's selling format: 'buy_now' for Buy It Now listings, 'rage_buy' or 'all_mine' for Auction/Live listings (subject to eligibility). For calculated-shipping listings, pass a shipping_address and shipping_rate_id.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "listing_id": { "type": "string", "description": "The ID of the Listing to purchase." },
+            "purchase_type": { "type": "string", "enum": ["buy_now", "auction", "rage_buy", "all_mine"], "description": "How the item is being purchased. Must match the listing's selling format." },
+            "shipping_address": {
+              "type": "object",
+              "description": "Buyer's shipping address. Required for calculated-shipping listings.",
+              "properties": {
+                "name": { "type": "string" },
+                "street1": { "type": "string" },
+                "city": { "type": "string" },
+                "state": { "type": "string" },
+                "zip": { "type": "string" },
+                "country": { "type": "string", "description": "ISO country code, defaults to US." }
+              }
+            },
+            "shipping_rate_id": { "type": "string", "description": "A Shippo rate object ID, required for calculated-shipping listings. Obtain one via get_shipping_rates." }
+          },
+          "required": ["listing_id", "purchase_type"]
+        },
+        "handler": "stripe-checkout",
+        "annotations": { "read_only_hint": false, "destructive_hint": false, "idempotent_hint": false }
+      },
+      {
+        "name": "get_shipping_rates",
+        "title": "Get Shipping Rates",
+        "description": "Fetches live shipping rate quotes from Shippo for a listing, given a destination address. Use when a buyer needs to see shipping options for a calculated-shipping listing before checkout.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "listing_id": { "type": "string", "description": "The ID of the Listing being shipped." },
+            "ship_to_name": { "type": "string" },
+            "ship_to_street1": { "type": "string" },
+            "ship_to_city": { "type": "string" },
+            "ship_to_state": { "type": "string" },
+            "ship_to_zip": { "type": "string" },
+            "ship_to_country": { "type": "string", "description": "ISO country code, defaults to US." }
+          },
+          "required": ["listing_id", "ship_to_state", "ship_to_zip"]
+        },
+        "handler": "shippo-get-rates",
+        "annotations": { "read_only_hint": true, "destructive_hint": false, "idempotent_hint": true }
+      },
+      {
+        "name": "create_shipping_label",
+        "title": "Create Shipping Label",
+        "description": "Purchases a single shipping label via Shippo for an order using a chosen rate, marks the order as shipped, and emails the buyer a tracking notification. Only the order's seller can call this. Use when a seller wants to ship an order.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "order_id": { "type": "string", "description": "The ID of the Order to ship." },
+            "rate_id": { "type": "string", "description": "A Shippo rate object ID to purchase the label against." }
+          },
+          "required": ["order_id", "rate_id"]
+        },
+        "handler": "shippo-create-label",
+        "annotations": { "read_only_hint": false, "destructive_hint": false, "idempotent_hint": false }
+      },
+      {
+        "name": "bulk_create_shipping_labels",
+        "title": "Bulk Create Shipping Labels",
+        "description": "Purchases shipping labels for multiple pending orders at once, automatically picking the cheapest rate for each, marking them shipped, and notifying buyers. Only the seller's own orders are processed. Use when a seller wants to ship many orders in one action.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "order_ids": { "type": "array", "items": { "type": "string" }, "description": "Array of Order IDs to ship." }
+          },
+          "required": ["order_ids"]
+        },
+        "handler": "shippo-bulk-create-labels",
+        "annotations": { "read_only_hint": false, "destructive_hint": false, "idempotent_hint": false }
+      },
+      {
+        "name": "mark_order_shipped",
+        "title": "Mark Order Shipped",
+        "description": "Marks an order as shipped with a manually-entered tracking number (no label purchase). Only the order's seller can call this, and the order must be pending shipment. Use when a seller ships outside the platform's label system.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "order_id": { "type": "string" },
+            "tracking_number": { "type": "string" }
+          },
+          "required": ["order_id", "tracking_number"]
+        },
+        "handler": "update-order-shipped",
+        "annotations": { "read_only_hint": false, "destructive_hint": false, "idempotent_hint": false }
+      },
+      {
+        "name": "mark_order_delivered",
+        "title": "Mark Order Delivered",
+        "description": "Marks an order as delivered. Only the order's buyer can call this, and the order must already be shipped. Use when a buyer confirms receipt of an item.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "order_id": { "type": "string" }
+          },
+          "required": ["order_id"]
+        },
+        "handler": "mark-order-delivered",
+        "annotations": { "read_only_hint": false, "destructive_hint": false, "idempotent_hint": false }
+      },
+      {
+        "name": "submit_review",
+        "title": "Submit Review",
+        "description": "Submits a 1–5 star review for a delivered order. Only the order's buyer can review, and only once per order. Updates the seller's average rating. Use after a buyer receives an item and wants to rate the seller.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "order_id": { "type": "string" },
+            "rating": { "type": "number", "description": "Star rating from 1 to 5 (integers only)." },
+            "comment": { "type": "string", "description": "Optional review text, max 1000 characters." }
+          },
+          "required": ["order_id", "rating"]
+        },
+        "handler": "submit-review",
+        "annotations": { "read_only_hint": false, "destructive_hint": false, "idempotent_hint": false }
+      },
+      {
+        "name": "start_stripe_onboarding",
+        "title": "Start Stripe Onboarding",
+        "description": "Generates a Stripe Express onboarding link for the current seller so they can set up payouts. Returns a URL the seller must open. Use when a seller needs to connect or refresh their Stripe account.",
+        "input_schema": { "type": "object", "properties": {} },
+        "handler": "stripe-onboarding",
+        "annotations": { "read_only_hint": false, "destructive_hint": false, "idempotent_hint": true }
+      },
+      {
+        "name": "check_stripe_verification",
+        "title": "Check Stripe Verification",
+        "description": "Checks and syncs a seller's Stripe account verification status. Only the profile owner can check their own profile. Use to confirm whether a seller is verified and ready to receive payouts.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "profile_id": { "type": "string", "description": "The ID of the SellerProfile to check." }
+          },
+          "required": ["profile_id"]
+        },
+        "handler": "check-stripe-verification",
+        "annotations": { "read_only_hint": true, "destructive_hint": false, "idempotent_hint": true }
+      },
+      {
+        "name": "create_stripe_account",
+        "title": "Create Stripe Account",
+        "description": "Creates a new Stripe Express account for a seller profile that doesn't have one yet. Only the profile owner can call this. Use when a seller needs a Stripe account created before onboarding.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "profile_id": { "type": "string", "description": "The ID of the SellerProfile to create a Stripe account for." }
+          },
+          "required": ["profile_id"]
+        },
+        "handler": "auto-stripe-onboard",
+        "annotations": { "read_only_hint": false, "destructive_hint": false, "idempotent_hint": true }
+      },
+      {
+        "name": "create_listing_calendar_event",
+        "title": "Create Listing Calendar Event",
+        "description": "Creates a Google Calendar event for a listing's auction end time. Admin only. Use when an admin wants a calendar reminder for when an auction listing expires.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "listing_id": { "type": "string", "description": "The ID of the Listing with an auction_end date." }
+          },
+          "required": ["listing_id"]
+        },
+        "handler": "create-listing-calendar-event",
+        "annotations": { "read_only_hint": false, "destructive_hint": false, "idempotent_hint": true }
+      },
+      {
+        "name": "create_ship_deadline_event",
+        "title": "Create Ship Deadline Event",
+        "description": "Creates a Google Calendar event for an order's ship-by deadline (2 days after order creation) with reminders. Admin only. Use when an admin wants a calendar reminder to ship an order on time.",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "order_id": { "type": "string", "description": "The ID of the Order to create a ship deadline for." }
+          },
+          "required": ["order_id"]
+        },
+        "handler": "create-order-ship-deadline",
+        "annotations": { "read_only_hint": false, "destructive_hint": false, "idempotent_hint": true }
+      },
+      {
+        "name": "sync_calendar_expirations",
+        "title": "Sync Calendar Expirations",
+        "description": "Scans Google Calendar for expired listing-auction events and marks those listings as ended. Admin only. Use when an admin wants to batch-expire auction listings whose end times have passed.",
+        "input_schema": { "type": "object", "properties": {} },
+        "handler": "sync-calendar-expirations",
+        "annotations": { "read_only_hint": false, "destructive_hint": false, "idempotent_hint": true }
+      }
+    ]
+  }
+}
