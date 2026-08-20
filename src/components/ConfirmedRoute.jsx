@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
-import { Outlet, Link } from 'react-router-dom';
+import { useEffect, useState, useCallback } from 'react';
+import { Outlet } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
 import { base44 } from '@/api/base44Client';
-import { Button } from '@/components/ui/button';
 import { MapPin } from 'lucide-react';
+import ShipFromAddress from '@/components/shipping/ShipFromAddress';
 
 export function LoginRedirect() {
   const { navigateToLogin } = useAuth();
@@ -19,6 +19,16 @@ export default function ConfirmedRoute() {
   const { user, isAuthenticated, isLoadingAuth, authChecked, authError } = useAuth();
   const [sellerProfile, setSellerProfile] = useState(null);
   const [profileLoading, setProfileLoading] = useState(true);
+
+  const reloadProfile = useCallback(async () => {
+    if (!user?.id) return;
+    try {
+      const profiles = await base44.entities.SellerProfile.filter({ user_id: user.id });
+      setSellerProfile(profiles[0] || null);
+    } catch (e) {
+      setSellerProfile(null);
+    }
+  }, [user?.id]);
 
   useEffect(() => {
     if (user?.id && isAuthenticated) {
@@ -46,19 +56,19 @@ export default function ConfirmedRoute() {
 
   if (!sellerProfile?.ship_from_street1) {
     return (
-      <div className="max-w-md mx-auto px-4 py-20 text-center">
+      <div className="max-w-md mx-auto px-4 py-12">
         <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
           <MapPin className="w-8 h-8 text-primary" />
         </div>
-        <h1 className="font-display text-3xl text-foreground mb-2">CONFIRM YOUR INFO</h1>
-        <p className="text-sm text-muted-foreground mb-6">
-          You need to add your ship-from address before you can sell items. Head to your dashboard, open the Personal Info tab, and fill out the Ship-From Address section.
+        <h1 className="font-display text-3xl text-foreground mb-2 text-center">CONFIRM YOUR INFO</h1>
+        <p className="text-sm text-muted-foreground mb-6 text-center">
+          Add your ship-from address below to continue. It's required for shipping labels.
         </p>
-        <Link to="/dashboard">
-          <Button className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase tracking-wider">
-            Go to Dashboard
-          </Button>
-        </Link>
+        {!sellerProfile ? (
+          <p className="text-sm text-muted-foreground text-center">Creating your seller profile…</p>
+        ) : (
+          <ShipFromAddress sellerProfile={sellerProfile} onSaved={reloadProfile} />
+        )}
       </div>
     );
   }
