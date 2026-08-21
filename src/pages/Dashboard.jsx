@@ -14,6 +14,7 @@ import PrintLabelDialog from '@/components/shipping/PrintLabelDialog';
 import ShipFromAddress from '@/components/shipping/ShipFromAddress';
 import ReviewDialog from '@/components/reviews/ReviewDialog';
 import PurchaseCard from '@/components/dashboard/PurchaseCard';
+import BulkListingsManager from '@/components/dashboard/BulkListingsManager';
 import PersonalInfoTab from '@/components/dashboard/PersonalInfoTab';
 import AnalyticsTab from '@/components/dashboard/AnalyticsTab';
 import { StarRating } from '@/components/reviews/StarRating';
@@ -78,6 +79,12 @@ export default function Dashboard() {
     const u = await base44.auth.me();
     const sp = await base44.entities.SellerProfile.filter({ user_id: u.id });
     setSellerProfile(sp[0] || null);
+  };
+
+  const reloadListings = async () => {
+    if (!user) return;
+    const l = await base44.entities.Listing.filter({ seller_id: user.id }, '-created_date', 50);
+    setListings(l);
   };
 
   // After returning from Stripe onboarding, poll Stripe directly to update the
@@ -282,29 +289,8 @@ export default function Dashboard() {
         </TabsContent>
 
         {/* Active Listings */}
-        <TabsContent value="active" className="space-y-3">
-          {activeListings.length === 0 && (
-            <div className="text-center py-12 text-muted-foreground">
-              <Package className="w-10 h-10 mx-auto mb-3 opacity-50" />
-              <p className="font-display text-xl">NO ACTIVE LISTINGS</p>
-              <Link to="/sell"><Button className="mt-3">List Something</Button></Link>
-            </div>
-          )}
-          {activeListings.map(listing => (
-            <Link key={listing.id} to={`/listing/${listing.id}`}>
-              <div className="bg-card border border-border rounded-lg p-4 flex items-center gap-4 hover:border-primary/30 transition-colors">
-                <div className="w-16 h-16 rounded bg-muted overflow-hidden shrink-0">
-                  <img src={listing.images?.[0] || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100'} alt="" className="w-full h-full object-cover" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-foreground truncate">{listing.title}</p>
-                  <p className="text-sm text-primary font-bold">${(listing.price || listing.current_bid || listing.starting_bid || 0).toFixed(2)}</p>
-                </div>
-                <Badge variant="outline" className="text-[10px]">{listing.selling_format}</Badge>
-                <ChevronRight className="w-4 h-4 text-muted-foreground" />
-              </div>
-            </Link>
-          ))}
+        <TabsContent value="active">
+          <BulkListingsManager listings={activeListings} onRefresh={reloadListings} />
         </TabsContent>
 
         {/* Sold */}
