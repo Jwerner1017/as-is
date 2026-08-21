@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { Upload, X, Plus, CreditCard, Loader2, RefreshCw } from 'lucide-react';
+import { Upload, X, Plus, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -18,7 +18,6 @@ export default function Sell() {
   const [profile, setProfile] = useState(null);
   const [profileLoading, setProfileLoading] = useState(true);
   const [onboardingLoading, setOnboardingLoading] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
   const [images, setImages] = useState([]);
   const [form, setForm] = useState({
     title: '', description: '', category: '', subcategory: '', condition: '',
@@ -43,7 +42,7 @@ export default function Sell() {
 
   useEffect(() => { loadProfile(); }, [loadProfile]);
 
-  const handleConnectStripe = async () => {
+  const handleConnectStripe = useCallback(async () => {
     setOnboardingLoading(true);
     try {
       const res = await base44.functions.invoke('stripe-onboarding', {});
@@ -51,24 +50,17 @@ export default function Sell() {
         window.location.href = res.data.url;
       }
     } catch (e) {
-      toast({ title: 'Error', description: e.response?.data?.error || e.message, variant: 'destructive' });
+      console.error('Stripe onboarding redirect failed:', e);
       setOnboardingLoading(false);
     }
-  };
+  }, []);
 
-  const handleRefreshVerification = async () => {
-    if (!profile?.id) return;
-    setRefreshing(true);
-    try {
-      await base44.functions.invoke('check-stripe-verification', { profile_id: profile.id });
-      await loadProfile();
-      toast({ title: 'Verification Updated', description: 'Checked your Stripe status.' });
-    } catch (e) {
-      toast({ title: 'Error', description: e.response?.data?.error || e.message, variant: 'destructive' });
-    } finally {
-      setRefreshing(false);
-    }
-  };
+  // If the seller hasn't finished Stripe onboarding, send them straight to
+  // Stripe instead of showing a blocking message.
+  useEffect(() => {
+    if (profileLoading || !profile || profile.onboarded) return;
+    handleConnectStripe();
+  }, [profileLoading, profile, handleConnectStripe]);
 
   const selectedCategory = CATEGORIES.find(c => c.name === form.category);
 
@@ -122,26 +114,10 @@ export default function Sell() {
           <div className="w-8 h-8 border-4 border-muted border-t-primary rounded-full animate-spin"></div>
         </div>
       ) : !profile?.onboarded ? (
-        <div className="bg-card border border-primary/30 rounded-lg p-8 text-center">
-          <CreditCard className="w-10 h-10 text-primary mx-auto mb-3" />
-          <p className="font-display text-2xl text-foreground mb-2">VERIFICATION REQUIRED</p>
-          <p className="text-sm text-muted-foreground mb-6">
-            {profile?.stripe_account_id
-              ? "Your Stripe onboarding isn't complete yet. Finish setting up payouts to start listing."
-              : "Connect Stripe to receive payouts before you can list items. It takes 2 minutes."}
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Button onClick={handleConnectStripe} disabled={onboardingLoading} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase tracking-wider">
-              {onboardingLoading ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <CreditCard className="w-4 h-4 mr-1" />}
-              {profile?.stripe_account_id ? 'FINISH SETUP' : 'CONNECT STRIPE'}
-            </Button>
-            {profile?.stripe_account_id && (
-              <Button onClick={handleRefreshVerification} disabled={refreshing} variant="outline" className="font-bold uppercase tracking-wider">
-                {refreshing ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <RefreshCw className="w-4 h-4 mr-1" />}
-                I'VE COMPLETED IT
-              </Button>
-            )}
-          </div>
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <Loader2 className="w-8 h-8 text-primary animate-spin mb-4" />
+          <p className="font-display text-2xl text-foreground mb-1">SENDING YOU TO STRIPE</p>
+          <p className="text-sm text-muted-foreground">Finishing your payouts setup so you can list items.</p>
         </div>
       ) : (
       <form onSubmit={handleSubmit} className="space-y-6">
