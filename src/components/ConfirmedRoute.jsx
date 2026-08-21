@@ -24,23 +24,36 @@ export default function ConfirmedRoute() {
     if (!user?.id) return;
     try {
       const profiles = await base44.entities.SellerProfile.filter({ user_id: user.id });
-      setSellerProfile(profiles[0] || null);
+      // Prefer a profile that already has a ship-from address (guards against
+      // duplicate profiles where an older one lacks the address).
+      let profile = profiles.find(p => p.ship_from_street1) || profiles[0] || null;
+      if (!profile) {
+        profile = await base44.entities.SellerProfile.create({
+          user_id: user.id,
+          display_name: user.full_name || 'New Seller'
+        });
+      }
+      setSellerProfile(profile);
     } catch (e) {
       setSellerProfile(null);
     }
-  }, [user?.id]);
+  }, [user?.id, user?.full_name]);
+
+  // Apply the saved profile immediately so the user proceeds without waiting
+  // on a re-fetch (which could return a stale or duplicate record).
+  const handleAddressSaved = useCallback((updatedProfile) => {
+    if (updatedProfile) setSellerProfile(updatedProfile);
+    reloadProfile();
+  }, [reloadProfile]);
 
   useEffect(() => {
     if (user?.id && isAuthenticated) {
       setProfileLoading(true);
-      base44.entities.SellerProfile.filter({ user_id: user.id })
-        .then(profiles => setSellerProfile(profiles[0] || null))
-        .catch(() => setSellerProfile(null))
-        .finally(() => setProfileLoading(false));
+      reloadProfile().finally(() => setProfileLoading(false));
     } else {
       setProfileLoading(false);
     }
-  }, [user?.id, isAuthenticated]);
+  }, [user?.id, isAuthenticated, reloadProfile]);
 
   if (isLoadingAuth || !authChecked || profileLoading) {
     return (
@@ -65,9 +78,9 @@ export default function ConfirmedRoute() {
           Add your ship-from address below to continue. It's required for shipping labels.
         </p>
         {!sellerProfile ? (
-          <p className="text-sm text-muted-foreground text-center">Creating your seller profile…</p>
+          <p className="text-sm text-muted-foreground text-center">Setting up your seller profile…</p>
         ) : (
-          <ShipFromAddress sellerProfile={sellerProfile} onSaved={reloadProfile} />
+          <ShipFromAddress sellerProfile={sellerProfile} onSaved={handleAddressSaved} />
         )}
       </div>
     );

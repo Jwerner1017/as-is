@@ -20,9 +20,9 @@ export default function ShipFromAddress({ sellerProfile, onSaved }) {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await base44.entities.SellerProfile.update(sellerProfile.id, form);
+      const updated = await base44.entities.SellerProfile.update(sellerProfile.id, form);
       toast({ title: "Address Saved", description: "Your ship-from address is set." });
-      onSaved();
+      onSaved(updated);
     } catch (e) {
       toast({ title: "Error", description: e.message, variant: "destructive" });
     } finally {
