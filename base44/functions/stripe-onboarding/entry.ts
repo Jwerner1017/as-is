@@ -14,7 +14,10 @@ Deno.serve(async (req) => {
     let profile = profiles[0];
 
     if (!profile) {
-      return Response.json({ error: 'Seller profile not found. Complete onboarding first.' }, { status: 400 });
+      profile = await base44.entities.SellerProfile.create({
+        user_id: user.id,
+        display_name: user.full_name || 'New Seller',
+      });
     }
 
     if (!profile.stripe_account_id) {
