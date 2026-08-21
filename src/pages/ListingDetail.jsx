@@ -10,6 +10,7 @@ import { useToast } from '@/components/ui/use-toast';
 import moment from 'moment';
 import ShippingAddressForm from '@/components/shipping/ShippingAddressForm';
 import { StarRating } from '@/components/reviews/StarRating';
+import SellerReviews from '@/components/reviews/SellerReviews';
 
 export default function ListingDetail() {
   const { id } = useParams();
@@ -303,6 +304,9 @@ export default function ListingDetail() {
               </div>
             )}
           </div>
+
+          {/* Seller reviews */}
+          <SellerReviews sellerId={listing.seller_id} sellerName={listing.seller_name} />
 
           {/* Shipping */}
           <div className="bg-card border border-border rounded-lg p-4 flex items-center gap-3">
