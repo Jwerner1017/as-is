@@ -4,8 +4,6 @@ import Stripe from 'npm:stripe@17.4.0';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     const body = await req.json();
     const { profile_id } = body;
@@ -17,10 +15,6 @@ Deno.serve(async (req) => {
     const profile = await base44.asServiceRole.entities.SellerProfile.get(profile_id);
     if (!profile) {
       return Response.json({ error: 'Seller profile not found' }, { status: 404 });
-    }
-
-    if (profile.user_id !== user.id) {
-      return Response.json({ error: 'Forbidden: you can only onboard your own seller profile' }, { status: 403 });
     }
 
     if (profile.stripe_account_id) {
